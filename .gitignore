@@ -8,4 +8,4 @@ docker/certs
 docker/fast-api/app/line-messages
 
 # .env
-resal-dev/.env
+first-class/.env
