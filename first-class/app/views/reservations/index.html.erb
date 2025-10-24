@@ -1,0 +1,767 @@
+<div class="flex flex-col">
+  <!-- 絞り込み -->
+  <div class="py-3 px-4">
+    <%= form_with(url: reservations_path, method: :get, local: true) do |form| %>
+      <%= form.hidden_field :sort_column %>
+      <%= form.hidden_field :sort_direction %>
+      <div class="sm:flex items-center">
+        <% if number_format(session[:user_role_id]) != "1" %>
+        <div class="flex w-80 py-2 sm:px-2">
+          <div class="w-full">
+            フリーワード<br />
+            <%= form.text_field :free_word, placeholder:"予約者氏名、電話番号、メールアドレス", class:"py-3 w-full px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+          </div>
+        </div>
+        <div class="flex py-2 sm:px-2">
+          <div>
+            店舗<br />
+            <%= form.select :store_id, @store_select, {}, {class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"} %>
+          </div>
+          <div>
+            セラピスト<br/>
+            <div id="therapist-autocomplete"></div>
+          </div>
+          <% end %>
+        </div>
+      </div>
+      <div class="sm:flex items-center">
+        <div class="flex py-2 sm:px-2">
+          <div>
+            期間<br />
+            <%= form.date_field :reservation_datetime_from, class:"py-3 px-4 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+          </div>
+          <div>
+            <br />
+            &nbsp;〜&nbsp;
+          </div>
+          <div>
+            <br />
+            <%= form.date_field :reservation_datetime_to, class:"py-3 px-4 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+          </div>
+        </div>
+        <div class="py-2 sm:px-2">
+          ステータス<br />
+          未確定<%= form.check_box :unsettled, {include_hidden: false}, "1", "0" %>
+          確定(未遂行)<%= form.check_box :settled, {include_hidden: false}, "1", "0" %>
+          <br />
+          キャンセル<%= form.check_box :cancelled, {include_hidden: false}, "1", "0" %>
+          遂行済<%= form.check_box :executed, {include_hidden: false}, "1", "0" %>
+        </div>
+        <%= form.submit '絞り込み', id: 'apply', class: 'py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none' %>
+      </div>
+    <% end %>
+  </div>
+
+  <% if number_format(session[:user_role_id]) != "1" %>
+    <div class="text-start">
+      ※ステータスを確定(未遂行)にするには、
+      <br class="sm:hidden" />
+      セラピストを選択する必要があります。
+    </div>
+    <div class="text-start">
+      ※事前決済が指定された予約のステータスを遂行にするには、
+      <br class="sm:hidden" />
+      支払い済みにチェックしている必要があります。
+    </div>
+  <% end %>
+  <div class="text-end">
+    <%= @reservations.count %>件
+  </div>
+  <div class="overflow-x-auto">
+    <div class="p-1.5 min-w-full inline-block align-middle">
+      <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+        <div class="overflow-hidden">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">詳細</th>
+                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
+                  <button type="button" onClick="sort('reservation_status_id')">
+                    ステータス
+                    <%= sort_icon('reservation_status_id') %>
+                  </button>
+                </th>
+                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
+                  <button type="button" onClick="sort('reservation_datetime')">
+                    予約日時
+                    <%= sort_icon('reservation_datetime') %>
+                  </button>
+                </th>
+                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">店舗<br/>セラピスト</th>
+                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">ポイント<br/>(応援除く)</th>
+                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">予約者氏名<br/>予約タイプ</th>
+                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
+                  決済手段
+                  <% if session[:user_role_id] != 1 %>
+                    <br/>
+                    決済状況
+                  <% end %>
+                </th>
+                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
+                  <button type="button" onClick="sort('id')">
+                    予約ID
+                    <%= sort_icon('id') %>
+                  </button>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+              <% @reservations.each do |reservation| %>
+              <% if reservation.highlite_unsettled + reservation.highlite_expired + reservation.highlite_payment == "" %>
+                <tr>
+              <% else %>
+                <tr class="bg-red-100" >
+              <% end %>
+                <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+                  <% if reservation.whiteboard.present? && session[:user_role_id] != 1 %>
+                    <span type="button" class="animate-ping absolute inline-flex rounded-full bg-red-400 opacity-75 dark:bg-red-600"></span>
+                      <span class="relative inline-flex text-xs bg-red-500 text-white rounded-full py-0.5 px-1.5">
+                        ！
+                      </span>
+                    </span>
+                  <% end %>
+                  <button type="button" class="py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-vertically-centered-modal-<%= reservation.id %>">
+                    表示
+                  </button>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
+                  <%= reservation.reservation_status.status_name %>
+                  <% if number_format(session[:user_role_id]) != "1" %>
+                    <br/>
+                    <% case reservation.reservation_status.id
+                    when 1 %>
+                      <% if reservation.therapist_id.present? %>
+                        <button type="button" name="change-status-button" data-status="2" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-change-status-modal-<%= reservation.id %>">
+                          確定(未遂行)
+                        </button>
+                      <% end %>
+                      <button type="button" name="cancel-reason-button" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-cancel-reason-modal-<%= reservation.id %>">
+                        キャンセル
+                      </button>
+                    <% when 2 %>
+                      <% if reservation.therapist_id.present? && reservation.highlite_payment == "" %>
+                        <button type="button" name="change-status-button" data-status="4" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-change-status-modal-<%= reservation.id %>">
+                          遂行
+                        </button>
+                      <% end %>
+                      <button type="button" name="cancel-reason-button" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-cancel-reason-modal-<%= reservation.id %>">
+                        キャンセル
+                      </button>
+                    <% when 3 %>
+                      <% if number_format(session[:user_role_id]) == "2" %>
+                        <%= button_to '未確定に戻す', back_status_reservation_path(reservation), { method: :patch, form: { onSubmit: "return check('予約のステータスを未確定に戻しますか？','')" }, class:"py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:pointer-events-none" } %>
+                      <% end %>
+                    <% else %>
+                      <% if number_format(session[:user_role_id]) == "2" %>
+                        <%= button_to '確定(未遂行)に戻す', back_status_reservation_path(reservation), { method: :patch, form: { onSubmit: "return check('予約のステータスを確定(未遂行)に戻しますか？','')" }, class:"py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:pointer-events-none" } %>
+                      <% end %>
+                    <% end %>
+                  <% end %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
+                  <%= l reservation.reservation_datetime %><br/>
+                  〜
+                  <%= l get_end_reservation_datetime(reservation) %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
+                  <%= reservation.store.store_name %><br/>
+                  <%= @therapist_list[reservation.store_id][reservation.therapist_id] %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
+                  <%= reservation.reservation_points.sum_point + reservation.reservation_points.sum_support_point %> (<%= reservation.reservation_points.sum_point %>)
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
+                  <%= reservation.name %>様<br/>
+                  <%= reservation.reservation_type.type_name %>
+                  <% if reservation.adjustment_flag %>
+                    （調整済み）
+                  <% else %>
+                    （未調整）
+                  <% end %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
+                  <%= reservation.reservation_payment_method.payment_method %><br/>
+                  <% if session[:user_role_id] != 1 %>
+                    <% if reservation.paid_flag %>
+                      （支払い済み）
+                    <% else %>
+                      （未支払い）
+                    <% end %>
+                  <% end %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200"><%= reservation.id %></td>
+              </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- キャンセル理由選択モーダルの定義 -->
+<% @reservations.each do |reservation| %>
+<div id="hs-cancel-reason-modal-<%= reservation.id %>" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+  <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+    <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7]">
+      <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+        <h3 class="font-bold text-gray-800 dark:text-white">
+          キャンセル理由の選択
+        </h3>
+        <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#hs-cancel-reason-modal-<%= reservation.id %>">
+          <span class="sr-only">Close</span>
+          <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="p-4">
+        <div class="space-y-2">
+          <div class="flex items-center">
+            <input type="radio" name="cancel_reason" value="お客様都合" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+            <label class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">お客様都合</label>
+          </div>
+          <div class="flex items-center">
+            <input type="radio" name="cancel_reason" value="セラピスト都合" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+            <label class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">セラピスト都合</label>
+          </div>
+          <div class="flex items-center">
+            <input type="radio" name="cancel_reason" value="無断キャンセル" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+            <label class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">無断キャンセル</label>
+          </div>
+          <div class="flex items-center">
+            <input type="radio" name="cancel_reason" value="予約間違い・変更" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+            <label class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">予約間違い・変更</label>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+        <button type="button" name="change-status-button" data-status="3" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-change-status-modal-<%= reservation.id %>">
+          メッセージ取得
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<% end %>
+
+<!-- ステータス変更modalの定義。 -->
+<% @reservations.each do |reservation| %>
+  <%= form_with(model: reservation, url: change_status_reservation_path(reservation), method: :patch, local: true) do |form| %>
+    <div id="hs-change-status-modal-<%= reservation.id %>" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+      <div hidden="hidden" name="reservation_params">
+        <div name="reservation_name"><%= reservation.name %></div>
+        <div name="reservation_tel"><%= reservation.tel %></div>
+        <div name="reservation_mail_address"><%= reservation.mail_address %></div>
+        <div name="reservation_sms"><%= reservation.sms %></div>
+        <div name="reservation_datetime"><%= l reservation.reservation_datetime %></div>
+        <div name="reservation_place"><%= reservation.place %></div>
+        <div name="reservation_address"><%= reservation.address %></div>
+        <div name="reservation_type_id"><%= reservation.reservation_type_id %></div>
+        <div name="reservation_courses">
+          <% reservation.reservation_courses.each do |reservation_course| %>
+          <div>
+            <div name="reservation_course_course"><%= reservation_course.course %></div>
+            <div name="reservation_course_course_detail"><%= reservation_course.course_detail %></div>
+            <div name="reservation_course_duration"><%= reservation_course.duration %></div>
+            <div name="reservation_course_amount"><%= reservation_course.amount %></div>
+            <div name="reservation_course_back_therapist_amount"><%= reservation_course.back_therapist_amount %></div>
+          </div>
+          <% end %>
+        </div>
+        <div name="reservation_fees">
+          <% reservation.reservation_fees.each do |reservation_fee| %>
+          <div>
+            <div name="reservation_fee_fee_type"><%= reservation_fee.fee_type %></div>
+            <div name="reservation_fee_fee_detail"><%= reservation_fee.fee_detail %></div>
+            <div name="reservation_fee_amount"><%= reservation_fee.amount %></div>
+            <div name="reservation_fee_back_therapist_amount"><%= reservation_fee.back_therapist_amount %></div>
+          </div>
+          <% end %>
+        </div>
+        <div name="reservation_payment_method"><%= reservation.reservation_payment_method.payment_method %></div>
+        <div name="reservation_store_id"><%= reservation.store.id %></div>
+        <div name="therapist_id"><%= reservation.therapist_id %></div>
+        <div name="therapist_name"><%= @therapist_list[reservation.store_id][reservation.therapist_id] %></div>
+      </div>
+      <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+        <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+          <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+            <h3 class="font-bold text-gray-800 dark:text-white">
+              予約ID：<%= reservation.id %>
+            </h3>
+            <%= form.hidden_field :reservation_status_id, name: "reservation_status_id" %>
+            <%= form.submit "確定(未遂行)", onClick: "return check('更新しますか？','update-reservation-" + reservation.id.to_s + "')", class: "py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none",id:"update-reservation-" + reservation.id.to_s %>
+            <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#hs-settle-modal-<%= reservation.id %>">
+              <span class="sr-only">Close</span>
+              <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18"></path>
+                <path d="m6 6 12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="border-b border-gray-200 dark:border-neutral-700">
+            <nav class="flex space-x-1" aria-label="Tabs" role="tablist">
+              <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500 active" id="tabs-settle-mail-item-<%= reservation.id %>" data-hs-tab="#tabs-settle-mail-<%= reservation.id %>" aria-controls="tabs-settle-mail-<%= reservation.id %>" role="tab">
+                メール
+              </button>
+              <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500" id="tabs-settle-line-item-<%= reservation.id %>" data-hs-tab="#tabs-settle-line-<%= reservation.id %>" aria-controls="tabs-settle-line-<%= reservation.id %>" role="tab">
+                LINE
+              </button>
+            </nav>
+          </div>
+          <div class="mt-3">
+            <div id="tabs-settle-mail-<%= reservation.id %>" role="tabpanel" aria-labelledby="tabs-settle-mail-<%= reservation.id %>">
+              <div class="flex justify-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+                お客様にメールを送信する
+                <%= check_box_tag :send_email_flag %>
+              </div>
+              <div class="flex justify-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+                <input value="" class="w-full" type="text" name="reservation_email_subject">
+              </div>
+              <div class="flex justify-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+                <textarea class="w-full" rows="10" name="reservation_email_body"></textarea>
+              </div>
+            </div>
+            <div id="tabs-settle-line-<%= reservation.id %>" class="hidden" role="tabpanel" aria-labelledby="tabs-settle-line-<%= reservation.id %>">
+              <div class="flex justify-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+                セラピストにLINEを送信する
+                <%= check_box_tag :send_line_flag %>
+              </div>
+              <div class="flex justify-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+                <textarea class="w-full" rows="10" name="reservation_line"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+
+<!-- 詳細modalの定義。 -->
+<% @reservations.each do |reservation| %>
+<div id="hs-vertically-centered-modal-<%= reservation.id %>" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+  <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+    <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+      <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+        <h3 class="font-bold text-gray-800 dark:text-white">
+          予約ID：<%= reservation.id %>
+        </h3>
+        <% if session[:user_role_id] != 1 %>
+          <a href="/reservations/<%= reservation.id %>/edit" target="_blank" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+            編集
+          </a>
+        <% end %>
+        <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay="#hs-vertically-centered-modal-<%= reservation.id %>">
+          <span class="sr-only">Close</span>
+          <svg class="flex-shrink-0 size-8" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="overflow-x-hidden" style="height:70vh;">
+        <div class="flex justify-start gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+          <div class="p-4 overflow-y-auto">
+            <div class="text-red-500">
+              <%= reservation.highlite_expired %>
+            </div>
+            <div class="text-red-500">
+              <%= reservation.highlite_unsettled %>
+            </div>
+            <div class="text-red-500">
+              <%= reservation.highlite_payment %>
+            </div>
+          </div>
+        </div>
+        <% if session[:user_role_id] != 1 %>
+          <div class="flex justify-start gap-x-2 py-3 px-4">
+            <div class="p-4 overflow-y-auto">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white">共有事項</h3>
+              <div>
+                <% if reservation.whiteboard.present? %>
+                  <%= reservation.whiteboard %>
+                <% else %>
+                  なし
+                <% end %>
+              </div>
+              <button type="button" class="py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-vertically-centered-whiteboard-modal-<%= reservation.id %>">
+                編集
+              </button>
+            </div>
+          </div>
+        <% end %>
+        <div class="flex justify-start gap-x-2 py-3 px-4">
+          <div class="p-4 overflow-y-auto">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white">基本情報</h3>
+            <p class="text-gray-800 dark:text-gray-400">
+              セラピスト：<%= @therapist_list[reservation.store_id][reservation.therapist_id] %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              店舗：<%= reservation.store.store_name %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              予約日時：<%= l reservation.reservation_datetime %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              予約タイプ：<%= reservation.reservation_type.type_name %>
+              <% if reservation.adjustment_flag %>
+                （調整済み）
+              <% else %>
+                （未調整）
+              <% end %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              ポイント(通常)：<%= reservation.reservation_points.sum_point %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              ポイント(応援)：<%= reservation.reservation_points.sum_support_point %>
+            </p>
+          </div>
+        </div>
+        <div class="flex justify-start gap-x-2 py-3 px-4">
+          <div class="p-4 overflow-y-auto">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white">予約者情報</h3>
+            <p class="text-gray-800 dark:text-gray-400">
+              氏名：<%= reservation.name %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              電話番号：<%= reservation.tel %>
+            </p>
+            <% if session[:user_role_id] != 1 %>
+              <p class="text-gray-800 dark:text-gray-400">
+                メールアドレス：<%= reservation.mail_address %>
+              </p>
+            <% end %>
+            <p class="text-gray-800 dark:text-gray-400">
+              決済方法：<%= reservation.reservation_payment_method.payment_method %>
+              <% if session[:user_role_id] != 1 %>
+                <% if reservation.paid_flag %>
+                  （支払い済み）
+                <% else %>
+                  （未支払い）
+                <% end %>
+              <% end %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              場所：<%= reservation.place %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              住所：<%= reservation.address %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              SMS：<%= reservation.sms %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              オプション：<%= reservation.option %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              NG：<%= reservation.ng %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              割引：<%= reservation.discount %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              その他：<%= reservation.note %>
+            </p>
+          </div>
+        </div>
+        <div class="flex justify-start items-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+          <div class="p-4 overflow-y-auto">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white">〇予約料金</h3>
+            <p class="text-gray-800 dark:text-gray-400">
+              予約料金合計：<%= number_format(reservation.reservation_fees.sum_amount + reservation.reservation_courses.sum_amount) %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              セラピストバック合計：<%= number_format(reservation.reservation_fees.sum_back_therapist_amount + reservation.reservation_courses.sum_back_therapist_amount) %>
+            </p>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white">▼予約費用</h3>
+            <p class="text-gray-800 dark:text-gray-400">
+              費用合計：<%= number_format(reservation.reservation_fees.sum_amount) %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              セラピストバック合計：<%= number_format(reservation.reservation_fees.sum_back_therapist_amount) %>
+            </p>
+            <div class="flex flex-col">
+              <div class="-m-1.5 overflow-x-auto">
+                <div class="p-1.5 min-w-full inline-block align-middle">
+                  <div class="overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead>
+                        <tr>
+                          <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">費用種別</th>
+                          <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">料金</th>
+                          <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">セラピストバック</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <% reservation.reservation_fees.each do |reservation_fees| %>
+                        <tr>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                            <%= reservation_fees.fee_type %>（<%= reservation_fees.fee_detail %>）
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200"><%= reservation_fees.amount %></td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200"><%= reservation_fees.back_therapist_amount %></td>
+                        </tr>
+                        <% end %>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white">▼コース料金</h3>
+            <p class="text-gray-800 dark:text-gray-400">
+              コース料金合計：<%= number_format(reservation.reservation_courses.sum_amount) %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              セラピストバック合計：<%= number_format(reservation.reservation_courses.sum_back_therapist_amount) %>
+            </p>
+            <div class="flex flex-col">
+              <div class="-m-1.5 overflow-x-auto">
+                <div class="p-1.5 min-w-full inline-block align-middle">
+                  <div class="overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead>
+                        <tr>
+                          <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">費用種別</th>
+                          <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">料金</th>
+                          <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">セラピストバック</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <% reservation.reservation_courses.each do |reservation_courses| %>
+                        <tr>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                            <%= reservation_courses.course %>（<%= reservation_courses.course_detail %>）
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200"><%= reservation_courses.amount %></td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200"><%= reservation_courses.back_therapist_amount %></td>
+                        </tr>
+                        <% end %>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-neutral-700">
+        <button type="button" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700" data-hs-overlay="#hs-vertically-centered-modal-<%= reservation.id %>">
+          閉じる
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<% end %>
+
+<!-- whiteboardのmodalの定義。 -->
+<% @reservations.each do |reservation| %>
+  <%= form_with(model: reservation, url: update_whiteboard_reservation_path(reservation), method: :patch, local: true) do |form| %>
+    <div id="hs-vertically-centered-whiteboard-modal-<%= reservation.id %>" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+      <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+        <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+          <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+            <h3 class="font-bold text-gray-800 dark:text-white">
+              予約ID：<%= reservation.id %>
+            </h3>
+            <%= form.hidden_field :reservation_status_id, name: "reservation_status_id" %>
+            <%= form.submit "更新", onClick: "return check('更新しますか？','update-whiteboard-" + reservation.id.to_s + "')", class: "py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none",id:"update-whiteboard-" + reservation.id.to_s %>
+            <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#hs-settle-modal-<%= reservation.id %>">
+              <span class="sr-only">Close</span>
+              <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18"></path>
+                <path d="m6 6 12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="flex justify-center border-b border-gray-200 dark:border-neutral-700">
+            <%= form.text_area :whiteboard, name: "whiteboard", class: "py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600", rows: 5 %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+
+<%= javascript_include_tag('reservations') %>
+<%= javascript_include_tag('therapist_autocomplete') %>
+
+<script>
+  // セラピスト名の自動補完
+  createTherapistAutocomplete()
+  updateTherapistAutocompleteList(document.getElementById("store_id").selectedOptions[0].dataset.therapist)
+  document.getElementById("store_id").addEventListener('change', function (event) {
+    updateTherapistAutocompleteList(document.getElementById("store_id").selectedOptions[0].dataset.therapist)
+  })
+
+
+  // 検索パラメータの再設定
+  searchParams = new URLSearchParams(document.location.search)
+  // もし検索パラメータがなかったら、最初のアクセスなのでステータスをチェック。
+  if (searchParams.toString() == "") {
+    document.getElementById("unsettled").checked = 1
+    document.getElementById("settled").checked = 1
+  }
+  searchParams.forEach((param,key)=>{
+    if (key == "unsettled" || key == "settled" || key == "cancelled" || key == "executed") {
+      document.getElementById(key).checked = searchParams.get(key)
+    } else if (key != "commit") {
+      document.getElementById(key).value = searchParams.get(key)
+    }
+  })
+
+
+  // ソートカラムがクリックされたら、ソートを設定してsubmitをクリック。
+  function sort(target_column) {
+    let sortColumn = document.getElementById("sort_column")
+    let sortDirection = document.getElementById("sort_direction")
+    if (sortColumn.value == target_column) {
+      if (sortDirection.value == "ASC") {
+        // ASCなら、DESCに変更。
+        sortDirection.value = "DESC"
+      } else {
+        // ASCでないなら、DESCもしくは変な値なので、リセット。
+        sortColumn.value = ""
+        sortDirection.value = ""
+      }
+    } else {
+      // 初めてのクリックであれば、ASCで設定。
+      sortColumn.value = target_column
+      sortDirection.value = "ASC"
+    }
+
+    document.getElementById("apply").click()
+  }
+
+
+  // cancel-reason-buttonにて、radioボタンのチェックがつかないのでclickリスナーを追加。
+  document.getElementsByName("cancel-reason-button").forEach((cancelBottun) => {
+    cancelBottun.addEventListener('click', async function (event) {
+      cancelReasonModalId = cancelBottun.dataset.hsOverlay.replace("#","")
+      cancelReasonModal = document.getElementById(cancelReasonModalId)
+      cancelReasonModal.querySelector('input[name="cancel_reason"]').checked = true
+    })
+  })
+
+
+  // 各change-status-buttonにclickリスナーを追加。
+  document.getElementsByName("change-status-button").forEach((statusBottun) => {
+    statusBottun.addEventListener('click', async function (event) {
+      targetModalId = statusBottun.dataset.hsOverlay.replace("#","")
+      reservationStatusId = statusBottun.dataset.status
+
+      // reservation_paramsを取得。
+      targetModal = document.getElementById(targetModalId)
+      reservationName = targetModal.querySelector("div[name='reservation_name']").innerHTML
+      reservationTel = targetModal.querySelector("div[name='reservation_tel']").innerHTML
+      reservationMailAddress = targetModal.querySelector("div[name='reservation_mail_address']").innerHTML
+      reservationSms = targetModal.querySelector("div[name='reservation_sms']").innerHTML
+      reservationDatetime = targetModal.querySelector("div[name='reservation_datetime']").innerHTML
+      reservationPlace = targetModal.querySelector("div[name='reservation_place']").innerHTML
+      reservationAddress = targetModal.querySelector("div[name='reservation_address']").innerHTML
+      reservationTypeId = targetModal.querySelector("div[name='reservation_type_id']").innerHTML
+      reservationCourses = []
+      Array.from(targetModal.querySelector("div[name='reservation_courses']").children).forEach((course) => {
+        reservationCourses.push({
+          course: course.querySelector("div[name='reservation_course_course']").innerHTML,
+          course_detail: course.querySelector("div[name='reservation_course_course_detail']").innerHTML,
+          duration: course.querySelector("div[name='reservation_course_duration']").innerHTML,
+          amount: course.querySelector("div[name='reservation_course_amount']").innerHTML,
+          back_therapist_amount: course.querySelector("div[name='reservation_course_back_therapist_amount']").innerHTML
+        })
+      })
+      reservationFees = []
+      Array.from(targetModal.querySelector("div[name='reservation_fees']").children).forEach((fee) => {
+        reservationFees.push({
+          fee_type: fee.querySelector("div[name='reservation_fee_fee_type']").innerHTML,
+          fee_detail: fee.querySelector("div[name='reservation_fee_fee_detail']").innerHTML,
+          amount: fee.querySelector("div[name='reservation_fee_amount']").innerHTML,
+          back_therapist_amount: fee.querySelector("div[name='reservation_fee_back_therapist_amount']").innerHTML
+        })
+      })
+      reservationPaymentMethod = targetModal.querySelector("div[name='reservation_payment_method']").innerHTML
+      reservationStoreId = targetModal.querySelector("div[name='reservation_store_id']").innerHTML
+      therapistId = targetModal.querySelector("div[name='therapist_id']").innerHTML
+      therapistName = targetModal.querySelector("div[name='therapist_name']").innerHTML
+
+      // 予約パラメータを元にメールとLINEを作成。
+      reservationCancelReason = ""
+      if (reservationStatusId == 3) {
+        cancelReasonModal = document.getElementById(targetModalId.replace("change-status-modal","cancel-reason-modal"))
+        reservationCancelReason = cancelReasonModal.querySelector('input[name="cancel_reason"]:checked').value
+      }
+      emailSubject = updateEmailSubject(reservationStatusId, reservationCancelReason)
+      mailParams = await getMailParams(reservationStoreId)
+      emailbody = updateEmailBody(
+        reservationStatusId,
+        reservationName,
+        reservationDatetime,
+        reservationMailAddress,
+        reservationPlace,
+        reservationAddress,
+        reservationTypeId,
+        reservationCourses,
+        reservationFees,
+        reservationPaymentMethod,
+        reservationCancelReason,
+        therapistId,
+        therapistName,
+        `<%= session[:user_role_id] %>`,
+        `<%= session[:user_name] %>`,
+        mailParams
+      )
+      sendEmailFlag = false
+      if (emailSubject != "" || emailbody != "") {
+        sendEmailFlag = true
+      }
+      targetModal.querySelector("input[name='reservation_email_subject']").value = emailSubject
+      targetModal.querySelector("textarea[name='reservation_email_body']").value = emailbody
+      targetModal.querySelector("input[name='send_email_flag']").checked = sendEmailFlag
+      line = updateLine(
+        reservationStatusId,
+        reservationName,
+        reservationTel,
+        reservationSms,
+        reservationDatetime,
+        reservationPlace,
+        reservationAddress,
+        reservationCourses,
+        reservationFees,
+        reservationPaymentMethod,
+        reservationCancelReason,
+        `<%= session[:user_role_id] %>`,
+        `<%= session[:user_name] %>`
+      )
+      sendLineFlag = false
+      if (line != "") {
+        sendLineFlag = true
+      }
+      targetModal.querySelector("textarea[name='reservation_line']").value = line
+      targetModal.querySelector("input[name='send_line_flag']").checked = sendLineFlag
+
+      // 更新用にステータスを変更。
+      targetModal.querySelector("input[name='reservation_status_id']").value = reservationStatusId
+      switch (reservationStatusId) {
+        case '2':
+          targetModal.querySelector("input[name='commit']").value = "確定(未遂行)"
+          targetModal.querySelector("input[name='commit']").className = "py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+          break
+        case '3':
+          targetModal.querySelector("input[name='commit']").value = "キャンセル"
+          targetModal.querySelector("input[name='commit']").className = "py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:pointer-events-none"
+          break
+        case '4':
+          targetModal.querySelector("input[name='commit']").value = "遂行"
+          targetModal.querySelector("input[name='commit']").className = "py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+          break
+      }
+    })
+  })
+</script>

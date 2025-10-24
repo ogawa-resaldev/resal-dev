@@ -1,0 +1,11 @@
+# vscodeの設定
+.vscode
+
+# mysqlのローカル
+# docker配下
+docker/mysql/data
+docker/certs
+docker/fast-api/app/line-messages
+
+# .env
+resal-dev/.env

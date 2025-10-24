@@ -1,0 +1,683 @@
+<div class="flex flex-col">
+  <div class="-m-1.5 overflow-x-auto">
+    <!-- 絞り込み -->
+    <%= form_with(url: transfers_path, method: :get, local: true) do |form| %>
+      <div class="flex space-x-4 items-center">
+        <% if number_format(session[:user_role_id]) != "1" %>
+          <div id="therapist-autocomplete"></div>
+        <% end %>
+        <div>
+          確認済<br />
+          <%= form.check_box :historical, {include_hidden: false}, "1", "0" %>
+        </div>
+        <%= form.submit '適用', class: 'py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none' %>
+      </div>
+    <% end %>
+
+    <div class="tabs">
+      <div class="border-b border-gray-200 dark:border-neutral-700">
+        <nav class="flex space-x-1 overflow-x-auto" aria-label="Tabs" role="tablist">
+          <% role_tabs = @transfers.sort_by(&:store_group_id).group_by(&:store_group_id) %>
+          <% role_tabs.keys.each_with_index do |store_group_id, index| %>
+            <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500 <%= 'active' if index == 0 %>" id="tabs-with-underline-item-<%= store_group_id %>" data-hs-tab="#tabs-with-underline-<%= store_group_id %>" aria-controls="tabs-with-underline-<%= store_group_id %>" role="tab">
+              <%= @store_group_list[store_group_id] %>
+            </button>
+          <% end %>
+        </nav>
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <% role_tabs.each_with_index do |(store_group_id, transfers), index| %>
+        <div id="tabs-with-underline-<%= store_group_id %>" class="<%= 'hidden' unless index == 0 %>" role="tabpanel" aria-labelledby="tabs-with-underline-item-<%= store_group_id %>">
+          <div class="text-end">
+            <%= transfers.count %>件
+          </div>
+          <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">ID</th>
+                    <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">ユーザー</th>
+                    <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
+                      清算合計金額
+                      <br />
+                      振込金額
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">向き先</th>
+                    <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
+                      振込日
+                      <br />
+                      振込期限
+                      </th>
+                    <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">確認</th>
+                  </tr>
+                </thead>
+                <tbody id="transfer-table-<%= store_group_id %>" class="divide-y divide-gray-200 dark:divide-gray-700">
+                  <% transfers.each do |transfer| %>
+                    <% if transfer.confirmation_flag %>
+                      <tr class="bg-gray-50" >
+                    <% elsif transfer.highlite %>
+                      <tr class="bg-red-100" >
+                    <% else %>
+                      <tr>
+                    <% end %>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                        <p class="text-gray-800 dark:text-gray-400">
+                          <%= transfer.id %>
+                        </p>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                        <p class="text-gray-800 dark:text-gray-400">
+                          <%= transfer.user.name %>
+                        </p>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                        <p class="text-gray-800 dark:text-gray-400">
+                          <%= transfer.sum_cash_flows[:amount] %>
+                          <button type="button" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-cash-flow-modal-<%= transfer.id %>">
+                            詳細
+                          </button>
+                          <br />
+                          <% if transfer.transfer_amount.present? %>
+                            <%= transfer.transfer_amount %>
+                          <% end %>
+                        </p>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                        <p class="text-gray-800 dark:text-gray-400">
+                          <% if transfer.direction == 1 %>
+                            セラピスト→店
+                          <% else %>
+                            店→セラピスト
+                          <% end %>
+                        </p>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                        <p class="text-gray-800 dark:text-gray-400">
+                          <% if transfer.transfer_date.blank? %>
+                            未振込
+                            <% if (transfer.direction == 1 && session[:user_role_id] == 1) || session[:user_role_id] == 3 || session[:user_role_id] == 2 %>
+                              <button type="button" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-set-transfer-modal-<%= transfer.id %>">
+                                振込設定
+                              </button>
+                            <% end %>
+                            <% if transfer.is_rejectable && session[:user_role_id] != 1 %>
+                              <button type="button" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-500 text-white hover:bg-red-500 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-reject-transfer-modal-<%= transfer.id %>">
+                                却下
+                              </button>
+                            <% end %>
+                          <% else %>
+                            <%= l transfer.transfer_date, format: :date %>
+                          <% end %>
+                        </p>
+                        <br />
+                        <p class="text-gray-800 dark:text-gray-400">
+                          <%= l transfer.transfer_deadline, format: :date %>
+                        </p>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                        <p class="text-gray-800 dark:text-gray-400">
+                          <% if transfer.confirmation_flag %>
+                            確認済み
+                          <% else %>
+                            未確認
+                            <% if (transfer.direction == 2 && session[:user_role_id] == 1) || session[:user_role_id] == 3 || session[:user_role_id] == 2 %>
+                              <button type="button" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-confirm-modal-<%= transfer.id %>">
+                                確認
+                              </button>
+                            <% end %>
+                          <% end %>
+                        </p>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- 詳細modalの定義。 -->
+<% @transfers.each do |transfer| %>
+<div id="hs-cash-flow-modal-<%= transfer.id %>" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+  <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+    <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+      <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+        <h3 class="font-bold text-gray-800 dark:text-white">
+          振込ID：<%= transfer.id %>
+        </h3>
+        <% if !transfer.transfer_amount.present? %>
+          <button type="button" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-update-cash-flow-modal-<%= transfer.id %>">
+            清算を編集
+          </button>
+        <% end %>
+        <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay="#hs-cash-flow-modal-<%= transfer.id %>">
+          <span class="sr-only">Close</span>
+          <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="overflow-x-hidden" style="height:60vh;">
+        <div class="flex justify-start items-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+          <div class="p-4 overflow-y-auto">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white">合計：<%= transfer.sum_cash_flows[:amount] %></h3>
+            <div class="flex flex-col">
+              <div class="-m-1.5 overflow-x-auto">
+                <div class="p-1.5 min-w-full inline-block align-middle">
+                  <div class="overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead>
+                        <tr>
+                          <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">発生日</th>
+                          <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
+                            <% if transfer.direction == 1 %>
+                              金額(セラピスト→店)
+                            <% else %>
+                              金額(店→セラピスト)
+                            <% end %>
+                          </th>
+                          <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">種別</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <% transfer.cash_flows.each do |cash_flow| %>
+                        <tr>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                            <%= l cash_flow.occurrence_date, format: :date %>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
+                            <% if transfer.direction == 1 %>
+                              <% if cash_flow.direction == 1 %>
+                                <%= cash_flow.amount %>
+                              <% else %>
+                                <%= cash_flow.amount * -1 %>
+                              <% end %>
+                            <% else %>
+                              <% if cash_flow.direction == 1 %>
+                                <%= cash_flow.amount * -1 %>
+                              <% else %>
+                                <%= cash_flow.amount %>
+                              <% end %>
+                            <% end %>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
+                            <p class="text-gray-800 dark:text-gray-400">
+                              <% if cash_flow.type == "予約" %>
+                                <a href="/reservations/<%= cash_flow.reservation_id %>/edit" target="_blanck" class="text-blue-600 underline decoration-white hover:opacity-80">
+                                  <%= cash_flow.type %> (<%= cash_flow.type_detail %>様)
+                                </a>
+                              <% elsif cash_flow.type == "バー" %>
+                                <%= cash_flow.type %>
+                              <% elsif cash_flow.type == "雑費" %>
+                                <%= cash_flow.type %> (<%= cash_flow.type_detail %>)
+                              <% end %>
+                            </p>
+                          </td>
+                        </tr>
+                        <% end %>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-neutral-700">
+        <button type="button" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700" data-hs-overlay-close="#hs-create-transfer-modal">
+          閉じる
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<% end %>
+
+<!-- 清算編集modalの定義。 -->
+<% @transfers.each do |transfer| %>
+  <%= form_with(model: transfer, url: update_cash_flow_transfer_path(transfer), method: :patch, local: true) do |form| %>
+    <%= form.hidden_field "remove_cash_flow_ids", id: "remove_cash_flow_ids_"+transfer.id.to_s %>
+    <%= form.hidden_field "add_cash_flow_ids", id: "add_cash_flow_ids_"+transfer.id.to_s %>
+    <%= form.hidden_field "transfer_id", id: "transfer_id_"+transfer.id.to_s %>
+    <div id="hs-update-cash-flow-modal-<%= transfer.id %>" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+      <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+        <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+          <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+            <h3 class="font-bold text-gray-800 dark:text-white">
+              振込ID：<%= transfer.id %>
+            </h3>
+            <button type="submit" onClick="set_params(<%= transfer.id %>); return check('更新しますか？','update-cash-flows-<%= transfer.id %>')" id="update-cash-flows-<%= transfer.id %>" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">更新</button>
+            <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay="#hs-cash-flow-modal-<%= transfer.id %>">
+              <span class="sr-only">Close</span>
+              <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18"></path>
+                <path d="m6 6 12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="overflow-x-hidden" style="height:70vh;">
+            <div class="flex justify-start items-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+              <div class="p-4 overflow-y-auto">
+                <p <%= "hidden" if number_format(session[:user_role_id]) == "1" %>>
+                  セラピストに通知を送る：<%= check_box_tag :send_notifications_flag, true, false, {checked: true} %>
+                </p>
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white">清算解除</h3>
+                <div class="flex flex-col">
+                  <div class="-m-1.5 overflow-x-auto">
+                    <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+                      <div class="overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                          <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                              <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
+                                <input id="hs-table-check-all-remove-<%= transfer.id %>" name="hs-table-check-all-remove" type="checkbox" class="border-gray-200 rounded text-blue-600 focus:ring-blue-500 dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                              </th>
+                              <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">発生日</th>
+                              <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
+                                金額(セラピスト→店)
+                              </th>
+                              <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">種別</th>
+                            </tr>
+                          </thead>
+                          <tbody id="remove-cash-flow-table-<%= transfer.id %>" name="remove-cash-flow-table" class="divide-y divide-gray-200 dark:divide-gray-700">
+                            <% transfer.cash_flows.each do |cash_flow| %>
+                            <% if cash_flow.highlite %>
+                              <tr class="bg-red-100" >
+                            <% else %>
+                              <tr>
+                            <% end %>
+                              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                                <%= check_box_tag 'remove-cash-flow-check-box-'+(transfer.id).to_s, cash_flow.id, checked = false, :id => "remove-cash-flow-#{cash_flow.id}", :class=>"border-gray-200 rounded text-blue-600 focus:ring-blue-500 dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" %>
+                              </td>
+                              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                                <p class="text-gray-800 dark:text-gray-400">
+                                  <%= l cash_flow.occurrence_date, format: :date %>
+                                </p>
+                              </td>
+                              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                                <input type="hidden" value=<%= cash_flow.amount %> />
+                                <input type="hidden" value=<%= cash_flow.direction %> />
+                                <p class="text-gray-800 dark:text-gray-400">
+                                  <% if cash_flow.direction == 1 %>
+                                    <%= cash_flow.amount %>
+                                  <% else %>
+                                    <%= cash_flow.amount * (-1) %>
+                                <% end %>
+                                </p>
+                              </td>
+                              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                                <p class="text-gray-800 dark:text-gray-400">
+                                  <% if cash_flow.type == "予約" %>
+                                    <a href="/reservations/<%= cash_flow.reservation_id %>/edit" target="_blanck" class="text-blue-600 underline decoration-white hover:opacity-80">
+                                      <%= cash_flow.type %> (<%= cash_flow.type_detail %>様)
+                                    </a>
+                                  <% elsif cash_flow.type == "バー" %>
+                                    <%= cash_flow.type %>
+                                  <% elsif cash_flow.type == "雑費" %>
+                                    <%= cash_flow.type %> (<%= cash_flow.type_detail %>)
+                                  <% end %>
+                                </p>
+                              </td>
+                            </tr>
+                            <% end %>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="flex justify-start items-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+              <div class="p-4 overflow-y-auto">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white">清算追加</h3>
+                <div class="flex flex-col">
+                  <div class="-m-1.5 overflow-x-auto">
+                    <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+                      <div class="overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                          <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                              <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
+                                <input id="hs-table-check-all-add-<%= transfer.id %>" name="hs-table-check-all-add" type="checkbox" class="border-gray-200 rounded text-blue-600 focus:ring-blue-500 dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                              </th>
+                              <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">発生日</th>
+                              <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
+                                金額(セラピスト→店)
+                              </th>
+                              <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">種別</th>
+                            </tr>
+                          </thead>
+                          <tbody id="add-cash-flow-table-<%= transfer.id %>" name="add-cash-flow-table" class="divide-y divide-gray-200 dark:divide-gray-700">
+                            <% CashFlow.where(transfer_id: nil, store_group_id: transfer.store_group_id, user_id: transfer.user_id).order(occurrence_date: :asc, id: :asc).each do |cash_flow| %>
+                            <% if cash_flow.highlite %>
+                              <tr class="bg-red-100" >
+                            <% else %>
+                              <tr>
+                            <% end %>
+                              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                                <%= check_box_tag 'add-cash-flow-check-box-'+(transfer.id).to_s, cash_flow.id, checked = false, :id => "add_cash_flow_#{cash_flow.id}", :class=>"border-gray-200 rounded text-blue-600 focus:ring-blue-500 dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" %>
+                              </td>
+                              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                                <p class="text-gray-800 dark:text-gray-400">
+                                  <%= l cash_flow.occurrence_date, format: :date %>
+                                </p>
+                              </td>
+                              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                                <input type="hidden" value=<%= cash_flow.amount %> />
+                                <input type="hidden" value=<%= cash_flow.direction %> />
+                                <p class="text-gray-800 dark:text-gray-400">
+                                  <% if cash_flow.direction == 1 %>
+                                    <%= cash_flow.amount %>
+                                  <% else %>
+                                    <%= cash_flow.amount * (-1) %>
+                                <% end %>
+                                </p>
+                              </td>
+                              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                                <p class="text-gray-800 dark:text-gray-400">
+                                  <% if cash_flow.type == "予約" %>
+                                    <a href="/reservations/<%= cash_flow.reservation_id %>/edit" target="_blanck" class="text-blue-600 underline decoration-white hover:opacity-80">
+                                      <%= cash_flow.type %> (<%= cash_flow.type_detail %>様)
+                                    </a>
+                                  <% elsif cash_flow.type == "バー" %>
+                                    <%= cash_flow.type %>
+                                  <% elsif cash_flow.type == "雑費" %>
+                                    <%= cash_flow.type %> (<%= cash_flow.type_detail %>)
+                                  <% end %>
+                                </p>
+                              </td>
+                            </tr>
+                            <% end %>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-neutral-700">
+            <button type="button" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700" data-hs-overlay="#hs-cash-flow-modal-<%= transfer.id %>">
+              閉じる
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+
+<!-- 振込設定modalの定義。 -->
+<% @transfers.each do |transfer| %>
+  <%= form_with(model: transfer, url: set_transfer_transfer_path(transfer), method: :patch, local: true) do |form| %>
+    <div id="hs-set-transfer-modal-<%= transfer.id %>" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+      <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+        <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+          <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+            <h3 class="font-bold text-gray-800 dark:text-white">
+              振込ID：<%= transfer.id %>
+            </h3>
+            <%= form.submit "振込設定", onClick:"return check('振込を設定しますか？','set-transfer-" + transfer.id.to_s + "')", id:"set-transfer-" + transfer.id.to_s, class: "py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" %>
+            <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#hs-set-transfer-modal-<%= transfer.id %>">
+              <span class="sr-only">Close</span>
+              <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18"></path>
+                <path d="m6 6 12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="flex justify-start gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+            <div class="p-4 overflow-y-auto">
+              <p <%= "hidden" if number_format(session[:user_role_id]) == "1" %>>
+                セラピストに通知を送る：<%= check_box_tag :send_notifications_flag, true, false, {checked: true} %>
+              </p>
+              <%= form.hidden_field :id, name: "id" %>
+              振込日
+              <%= form.date_field :transfer_date, name: "transfer_date", value:Time.now.strftime("%Y-%m-%d"), class:"py-3 px-4 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+              金額 (清算合計：<%= transfer.sum_cash_flows[:amount] %>)
+              <br />
+              <%= form.text_field :transfer_amount, name: "transfer_amount", value:transfer.sum_cash_flows[:amount], class: "py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" %>
+            </div>
+          </div>
+          <div class="flex justify-start gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+            <div class="p-4 overflow-y-auto">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white">振込情報</h3>
+              <p class="text-gray-800 dark:text-gray-400">
+                ユーザー：<%= transfer.user.name %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                向き先：
+                <% if transfer.direction == 1 %>
+                  セラピスト→店
+                <% else %>
+                  店→セラピスト
+                <% end %>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+
+<!-- 振込却下modalの定義。 -->
+<% @transfers.each do |transfer| %>
+  <%= form_with(model: transfer, url: "/transfers/" + transfer.id.to_s + "/reject", method: :patch, local: true) do |form| %>
+    <div id="hs-reject-transfer-modal-<%= transfer.id %>" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+      <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+        <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+          <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+            <h3 class="font-bold text-gray-800 dark:text-white">
+              振込ID：<%= transfer.id %>
+            </h3>
+            <%= form.submit "却下", onClick:"return check('振込を却下しますか？','reject-transfer-" + transfer.id.to_s + "')", id:"reject-transfer-" + transfer.id.to_s, class: "py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-500 text-white hover:bg-red-500 disabled:opacity-50 disabled:pointer-events-none" %>
+            <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay="#hs-reject-transfer-modal-<%= transfer.id %>">
+              <span class="sr-only">Close</span>
+              <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18"></path>
+                <path d="m6 6 12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="overflow-x-hidden" style="height:60vh;">
+            <div class="flex justify-start items-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+              <div class="p-4 overflow-y-auto">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white">合計：<%= transfer.sum_cash_flows[:amount] %></h3>
+                <div class="flex flex-col">
+                  <div class="-m-1.5 overflow-x-auto">
+                    <div class="p-1.5 min-w-full inline-block align-middle">
+                      <div class="overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                          <thead>
+                            <tr>
+                              <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">発生日</th>
+                              <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
+                                <% if transfer.direction == 1 %>
+                                  金額(セラピスト→店)
+                                <% else %>
+                                  金額(店→セラピスト)
+                                <% end %>
+                              </th>
+                              <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">種別</th>
+                            </tr>
+                          </thead>
+                          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            <% transfer.cash_flows.each do |cash_flow| %>
+                            <tr>
+                              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                                <%= l cash_flow.occurrence_date, format: :date %>
+                              </td>
+                              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
+                                <% if transfer.direction == 1 %>
+                                  <% if cash_flow.direction == 1 %>
+                                    <%= cash_flow.amount %>
+                                  <% else %>
+                                    <%= cash_flow.amount * -1 %>
+                                  <% end %>
+                                <% else %>
+                                  <% if cash_flow.direction == 1 %>
+                                    <%= cash_flow.amount * -1 %>
+                                  <% else %>
+                                    <%= cash_flow.amount %>
+                                  <% end %>
+                                <% end %>
+                              </td>
+                              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
+                                <p class="text-gray-800 dark:text-gray-400">
+                                  <% if cash_flow.type == "予約" %>
+                                    <a href="/reservations/<%= cash_flow.reservation_id %>/edit" target="_blanck" class="text-blue-600 underline decoration-white hover:opacity-80">
+                                      <%= cash_flow.type %> (<%= cash_flow.type_detail %>様)
+                                    </a>
+                                  <% elsif cash_flow.type == "バー" %>
+                                    <%= cash_flow.type %>
+                                  <% elsif cash_flow.type == "雑費" %>
+                                    <%= cash_flow.type %> (<%= cash_flow.type_detail %>)
+                                  <% end %>
+                                </p>
+                              </td>
+                            </tr>
+                            <% end %>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-neutral-700">
+            <button type="button" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700" data-hs-overlay-close="#hs-reject-transfer-modal-<%= transfer.id %>">
+              閉じる
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+
+<!-- 確認modalの定義。 -->
+<% @transfers.each do |transfer| %>
+  <%= form_with(model: transfer, url: confirm_transfer_path(transfer), method: :patch, local: true) do |form| %>
+    <div id="hs-confirm-modal-<%= transfer.id %>" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+      <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+        <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+          <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+            <h3 class="font-bold text-gray-800 dark:text-white">
+              振込ID：<%= transfer.id %>
+            </h3>
+            <%= form.submit "確認済み", onClick:"return check('振込を確認済みにしますか？','confirm-transfer-" + transfer.id.to_s + "')", id:"confirm-transfer-" + transfer.id.to_s, class: "py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" %>
+            <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#hs-confirm-modal-<%= transfer.id %>">
+              <span class="sr-only">Close</span>
+              <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18"></path>
+                <path d="m6 6 12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="flex justify-start gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+            <div class="p-4 overflow-y-auto">
+              <p <%= "hidden" if number_format(session[:user_role_id]) == "1" %>>
+                セラピストに通知を送る：<%= check_box_tag :send_notifications_flag, true, false, {checked: true} %>
+              </p>
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white">振込情報</h3>
+              <%= form.hidden_field :id, name: "id" %>
+              <p class="text-gray-800 dark:text-gray-400">
+                ユーザー：<%= transfer.user.name %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                金額：<%= transfer.transfer_amount %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                向き先：
+                <% if transfer.direction == 1 %>
+                  セラピスト→店
+                <% else %>
+                  店→セラピスト
+                <% end %>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+
+<%= javascript_include_tag('therapist_autocomplete') %>
+
+<script>
+  // セラピスト名の自動補完
+  createTherapistAutocomplete()
+
+
+  // 検索パラメータの再設定
+  searchParams = new URLSearchParams(document.location.search)
+  searchParams.forEach((param,key)=>{
+    if (key == "historical") {
+      document.getElementById("historical").checked = searchParams.get("historical")
+    } else if (key != "commit") {
+      document.getElementById(key).value = searchParams.get(key)
+    }
+  })
+
+
+  // セラピスト名の自動補完リストを更新。補完のため、検索セラピストの再設定後に実行。
+  updateTherapistAutocompleteList(`<%= @therapist_autocomplete %>`)
+
+
+  // 清算解除の全選択。
+  checkAllList = document.getElementsByName("hs-table-check-all-remove");
+  checkAllList.forEach((checkAll) => {
+    checkAll.addEventListener('change', function (event) {
+      transferId = checkAll.id.replace("hs-table-check-all-remove-", "")
+      document.getElementsByName("remove-cash-flow-check-box-" + transferId).forEach(function(checkBox){
+        checkBox.checked = checkAll.checked
+      })
+    })
+  })
+
+
+  // 清算追加の全選択。
+  checkAllList = document.getElementsByName("hs-table-check-all-add");
+  checkAllList.forEach((checkAll) => {
+    checkAll.addEventListener('change', function (event) {
+      transferId = checkAll.id.replace("hs-table-check-all-add-", "")
+      document.getElementsByName("add-cash-flow-check-box-" + transferId).forEach(function(checkBox){
+        checkBox.checked = checkAll.checked
+      })
+    })
+  })
+
+
+  function set_params(transfer_id) {
+    let targetRemoveCashFlowIdList = []
+    Array.from(document.getElementById("remove-cash-flow-table-"+transfer_id).children).forEach((cash_flow) => {
+      if (cash_flow.children[0].children[0].checked) {
+        targetRemoveCashFlowIdList.push(cash_flow.children[0].children[0].value)
+      }
+    })
+    let targetAddCashFlowIdList = []
+    Array.from(document.getElementById("add-cash-flow-table-"+transfer_id).children).forEach((cash_flow) => {
+      if (cash_flow.children[0].children[0].checked) {
+        targetAddCashFlowIdList.push(cash_flow.children[0].children[0].value)
+      }
+    })
+    document.getElementById("remove_cash_flow_ids_"+transfer_id).value = targetRemoveCashFlowIdList.join(",");
+    document.getElementById("add_cash_flow_ids_"+transfer_id).value = targetAddCashFlowIdList.join(",");
+    document.getElementById("transfer_id_"+transfer_id).value = transfer_id;
+  }
+</script>

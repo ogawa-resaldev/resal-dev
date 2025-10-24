@@ -1,0 +1,2 @@
+module MikadoCoinFlowRequestsHelper
+end

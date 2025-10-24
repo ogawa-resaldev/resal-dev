@@ -1,0 +1,1360 @@
+<%= form_with model: @applicant, url: {action: 'update'} do |f| %>
+<div class="border-b border-gray-200 dark:border-neutral-700">
+  <%= render 'shared/error_messages', object: f.object %>
+  <%= render 'shared/error_messages', object: @user %>
+  <nav class="flex space-x-1" aria-label="Tabs" role="tablist">
+    <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500 active" id="tabs-with-underline-item-1" data-hs-tab="#tabs-with-underline-1" aria-controls="tabs-with-underline-1" role="tab">
+      基本情報
+    </button>
+    <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500" id="tabs-with-underline-item-2" data-hs-tab="#tabs-with-underline-2" aria-controls="tabs-with-underline-2" role="tab">
+      写真
+    </button>
+    <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500" id="tabs-with-underline-item-3" data-hs-tab="#tabs-with-underline-3" aria-controls="tabs-with-underline-3" role="tab">
+      ステータス/選考情報
+    </button>
+    <button type="submit" onClick="return check('更新しますか？','update-applicant')", id="update-applicant", class="py-3 px-4 inline-flex justify-start items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+      更新
+    </button>
+  </nav>
+</div>
+
+<div class="mt-3">
+  <!-- 基本情報 -->
+  <div id="tabs-with-underline-1" role="tabpanel" aria-labelledby="tabs-with-underline-item-1">
+    <p class="text-gray-500 dark:text-neutral-400">
+      <div class="p-4 sm:p-7">
+        <div class="mt-5">
+          <!-- Form -->
+          <div class="grid gap-y-4">
+            <!-- Form Group -->
+            <div>
+              <label class="block text-sm mb-2 dark:text-white">応募日/希望の所属店舗/希望の所属店舗(HP選択)</label>
+              <div class="relative">
+                <div class="flex items-center">
+                  <%= f.fields_for :applicant_detail do |detail_form| %>
+                    <%= detail_form.date_field :application_date, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                    /
+                    <select name="applicant[applicant_detail_attributes][preferred_store_id]" id="applicant_applicant_detail_attributes_preferred_store_id" class="py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" <%= "disabled" if !@change_status_flag %>>
+                      <% Store.all_by_user(session[:user_id]).each do |store| %>
+                        <option value="<%= store.id %>" data-store-group-id="<%= store.store_group_id %>" <%= "selected" if store.id == @applicant.applicant_detail.preferred_store_id %>>
+                          <%= store.store_name %>
+                        </option>
+                      <% end %>
+                    </select>
+                    /
+                    <%= detail_form.text_field :preferred_store_text, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  <% end %>
+                </div>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <label class="block text-sm mb-2 dark:text-white">応募者氏名/電話番号/メールアドレス</label>
+              <div class="relative">
+                <div class="flex items-center">
+                  <%= f.fields_for :applicant_detail do |detail_form| %>
+                    <%= detail_form.text_field :name, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                    /
+                    <%= detail_form.text_field :tel, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                    /
+                    <%= detail_form.text_field :mail_address, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  <% end %>
+                </div>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <label class="block text-sm mb-2 dark:text-white">年齢/身長/体重</label>
+              <div class="relative">
+                <div class="flex items-center">
+                  <%= f.fields_for :applicant_detail do |detail_form| %>
+                    <%= detail_form.number_field :age, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>歳
+                    /
+                    <%= detail_form.number_field :height, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>cm
+                    /
+                    <%= detail_form.number_field :weight, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>kg
+                  <% end %>
+                </div>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <label class="block text-sm mb-2 dark:text-white">最寄駅/学歴/職業</label>
+              <div class="relative">
+                <div class="flex items-center">
+                  <%= f.fields_for :applicant_detail do |detail_form| %>
+                    <%= detail_form.text_field :nearest_station, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                    /
+                    <%= detail_form.text_field :education, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                    /
+                    <%= detail_form.text_field :occupation, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  <% end %>
+                </div>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <label class="block text-sm mb-2 dark:text-white">出勤頻度/経験人数</label>
+              <div class="relative">
+                <div class="flex items-center">
+                  <%= f.fields_for :applicant_detail do |detail_form| %>
+                    <%= detail_form.text_field :work_frequency, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                    /
+                    <%= detail_form.text_field :experience_count, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  <% end %>
+                </div>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <label class="block text-sm mb-2 dark:text-white">喫煙/タトゥーの有無/セラピスト経験・期間</label>
+              <div class="relative">
+                <div class="flex items-center">
+                  <%= f.fields_for :applicant_detail do |detail_form| %>
+                    <%= detail_form.select :smoking, @smoking_options, {}, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                    /
+                    <%= detail_form.select :has_tattoo, @has_tattoo_options, {}, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                    /
+                    <%= detail_form.select :therapist_experience, @therapist_experience_options, {}, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  <% end %>
+                </div>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <label class="block text-sm mb-2 dark:text-white">モザイク</label>
+              <div class="relative">
+                <div class="flex items-center">
+                  <%= f.fields_for :applicant_detail do |detail_form| %>
+                    <%= detail_form.select :mosaic, @mosaic_options, {}, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  <% end %>
+                </div>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <label class="block text-sm mb-2 dark:text-white">当店をどこで知りましたか？</label>
+              <div class="relative">
+                <div class="flex items-center">
+                  <%= f.fields_for :applicant_detail do |detail_form| %>
+                    <%= detail_form.text_field :how_to_know, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  <% end %>
+                </div>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <label class="block text-sm mb-2 dark:text-white">志望動機</label>
+              <div class="relative">
+                <div class="flex items-center">
+                <%= f.fields_for :applicant_detail do |detail_form| %>
+                  <%= detail_form.text_area :motivation, disabled: !@change_status_flag, class:"w-1/2 py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                <% end %>
+                </div>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <label class="block text-sm mb-2 dark:text-white">自己アピール</label>
+              <div class="relative">
+                <div class="flex items-center">
+                <%= f.fields_for :applicant_detail do |detail_form| %>
+                  <%= detail_form.text_area :self_pr, disabled: !@change_status_flag, class:"w-1/2 py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                <% end %>
+                </div>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <label class="block text-sm mb-2 dark:text-white">その他、ご質問等</label>
+              <div class="relative">
+                <div class="flex items-center">
+                <%= f.fields_for :applicant_detail do |detail_form| %>
+                  <%= detail_form.text_area :other_questions, disabled: !@change_status_flag, class:"w-1/2 py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                <% end %>
+                </div>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+          </div>
+          <!-- End Form -->
+        </div>
+      </div>
+    </p>
+  </div>
+
+  <!-- 写真 -->
+  <div id="tabs-with-underline-2" class="hidden" role="tabpanel" aria-labelledby="tabs-with-underline-item-2">
+    <p class="text-gray-500 dark:text-neutral-400">
+      <div class="-m-1.5 overflow-auto">
+        <div class="p-1.5 min-w-full inline-block align-middle">
+          <div class="overflow-hidden">
+            <div>
+              写真1
+              <br />
+              <button type="button" onClick="updateTarget('image_one')" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-latest-images-modal">
+                やりとりから画像を更新
+              </button>
+              <div id="image_one-spinner" class="my-2" style="display:none;">
+                <svg class="animate-spin h-6 w-6 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                </svg>
+              </div>
+              <%= f.fields_for :applicant_detail do |detail_form| %>
+                <div id="image_one" class="w-1/2">
+                  <% if detail_form.object.image_one_path %>
+                    <img class="object-cover rounded-lg" src="<%= detail_form.object.image_one_path %>" %>
+                  <% else %>
+                    <p class="text-gray-500 dark:text-gray-400 col-span-2 text-center py-4">写真がアップロードされていないか、削除されました。</p>
+                  <% end %>
+                </div>
+              <% end %>
+              <div class="relative">
+                <%= f.fields_for :applicant_detail do |detail_form| %>
+                  <% if @change_status_flag %>
+                    <%= detail_form.file_field :image_one, class: "py-3 px-4 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" %>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+            <div>
+              写真2
+              <br />
+              <button type="button" onClick="updateTarget('image_two')" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-latest-images-modal">
+                やりとりから画像を更新
+              </button>
+              <div id="image_two-spinner" class="my-2" style="display:none;">
+                <svg class="animate-spin h-6 w-6 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                </svg>
+              </div>
+              <%= f.fields_for :applicant_detail do |detail_form| %>
+                <div id="image_two" class="w-1/2">
+                  <% if detail_form.object.image_two_path %>
+                    <img class="object-cover rounded-lg" src="<%= detail_form.object.image_two_path %>" %>
+                  <% else %>
+                    <p class="text-gray-500 dark:text-gray-400 col-span-2 text-center py-4">写真がアップロードされていないか、削除されました。</p>
+                  <% end %>
+                </div>
+              <% end %>
+              <div class="relative">
+                <%= f.fields_for :applicant_detail do |detail_form| %>
+                  <% if @change_status_flag %>
+                    <%= detail_form.file_field :image_two, class: "py-3 px-4 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" %>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p>
+  </div>
+
+  <!-- ステータス/選考情報 -->
+  <div id="tabs-with-underline-3" class="hidden" role="tabpanel" aria-labelledby="tabs-with-underline-item-3">
+    <p class="text-gray-500 dark:text-neutral-400">
+      <div class="-m-1.5 overflow-auto">
+        <div class="p-1.5 min-w-full inline-block align-middle">
+          <div>
+            <div class="hs-accordion-group" data-hs-accordion-always-open="">
+              <div class="hs-accordion" id="hs-basic-always-open-heading-note">
+                <button type="button" class="hs-accordion-toggle hs-accordion-active:text-blue-600 py-3 inline-flex items-center gap-x-3 font-semibold text-start text-gray-800 hover:text-gray-500 rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:hs-accordion-active:text-blue-500 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:outline-none dark:focus:text-neutral-400" aria-controls="hs-basic-always-open-collapse-note">
+                  <svg class="hs-accordion-active:hidden block size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"></path>
+                    <path d="M12 5v14"></path>
+                  </svg>
+                  <svg class="hs-accordion-active:block hidden size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"></path>
+                  </svg>
+                  状況共有メモ
+                  <% if @applicant.note.present? %>
+                    <span class="relative inline-flex text-xs bg-red-500 text-white rounded-full py-0.5 px-1.5">
+                      ！
+                    </span>
+                  <% end %>
+                </button>
+                <div id="hs-basic-always-open-collapse-note" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-basic-always-open-heading-note">
+                  <%= f.text_area :note, disabled: !@change_status_flag, class:"w-full py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="overflow-hidden">
+            <%= f.check_box :pending_flag, {}, "1", "0" %>
+            保留
+            <h3 class="font-bold text-gray-800 dark:text-white">
+              ステータス
+            </h3>
+            <div class="inline-block align-middle">
+              <div>
+                現在のステータス：<%= ApplicantStatus.find(@beforeApplicantStatusId).status_name %>
+                <% if @beforeApplicantStatusId <= 5 %>
+                  <div class="w-full flex items-center gap-x-1">
+                    <% ApplicantStatus.where(id: ...6).each do |status| %>
+                      <% if status.id <= @beforeApplicantStatusId %>
+                        <div class="w-full flex flex-col justify-center overflow-hidden bg-blue-600 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-blue-500 py-1 px-4" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">
+                          <%= status.status_name %>
+                        </div>
+                      <% else %>
+                        <div class="w-full flex flex-col justify-center overflow-hidden bg-gray-300 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-neutral-600 py-1 px-4" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">
+                          <%= status.status_name %>
+                        </div>
+                      <% end %>
+                    <% end %>
+                  </div>
+                <% elsif @beforeApplicantStatusId == 6 %>
+                  <div class="w-full flex flex-col justify-center overflow-hidden bg-blue-600 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-blue-500 py-1 px-4" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">
+                    <%= ApplicantStatus.find(@beforeApplicantStatusId).status_name %>
+                  </div>
+                <% else %>
+                  <div class="w-full flex flex-col justify-center overflow-hidden bg-red-500 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-blue-500 py-1 px-4" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">
+                    <%= ApplicantStatus.find(@beforeApplicantStatusId).status_name %>
+                  </div>
+                <% end %>
+              </div>
+              <br />
+              <div>
+                更新先のステータス
+                <%= f.select :applicant_status_id, @status_select, {}, {disabled: !@change_status_flag, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"} %>
+                <div id="templates-spinner" class="my-2" style="display:none;">
+                  <svg class="animate-spin h-6 w-6 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                  </svg>
+                </div>
+              </div>
+              <div id="status_template" class="flex items-center gap-2">
+                <span>メールテンプレート</span>
+                <select id="status_mail_template_select" class="py-3 px-4 pe-9 inline-block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
+                </select>
+                <span>LINEテンプレート</span>
+                <select id="status_line_template_select" class="py-3 px-4 pe-9 inline-block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
+                </select>
+                <div>
+                  <button type="button" id="update_status_template_button" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+                    メッセージを更新
+                  </button>
+                </div>
+              </div>
+              <br />
+            </div>
+            <br />
+            <%= check_box_tag :send_mail_flag %>
+            応募者にメールを送信する
+            <br />
+            <%= check_box_tag :send_line_flag %>
+            応募者にLINEを送信する
+            <div class="border-b border-gray-200 dark:border-neutral-700 mt-4">
+               <nav class="flex space-x-1" aria-label="Tabs" role="tablist">
+                <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500 active" id="tab-params-btn" data-hs-tab="#tab-params" aria-controls="tab-params" role="tab">
+                  選考情報
+                </button>
+                <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500" id="tab-mail-btn" data-hs-tab="#tab-mail" aria-controls="tab-mail" role="tab">
+                  メール
+                </button>
+                <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500" id="tab-line-btn" data-hs-tab="#tab-line" aria-controls="tab-line" role="tab">
+                  LINE
+                </button>
+              </nav>
+            </div>
+            <div class="mt-3">
+              <div id="tab-params" role="tabpanel" aria-labelledby="tab-params-btn">
+                <div id="update_params">
+                  <% if @applicant.applicant_status_id == 1 %>
+                    <%= render partial: "check_interview_date_fields", locals: { f: f }%>
+                  <% elsif @applicant.applicant_status_id == 5 %>
+                    <%= render partial: "debut_therapist_fields", locals: { f: f }%>
+                  <% end %>
+                </div>
+                <% if @applicant.applicant_status_id >= 3 %>
+                  <h3 class="font-bold text-gray-800 dark:text-white">
+                    研修
+                  </h3>
+                  <div>
+                    研修日時
+                    <%= f.date_field :training_datetime, disabled: @applicant.applicant_status_id >= 5, class: "py-3 px-4 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                    <%= f.time_select :training_datetime, {minute_step: 1, min:"00:00"}, disabled: @applicant.applicant_status_id >= 5, class:"border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                  <div>
+                    担当講師
+                    <%= f.text_field :instructor, {disabled: @applicant.applicant_status_id >= 5, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"} %>
+                  </div>
+                  <div>
+                    調整状況
+                    <%= f.select :training_adjustment_id, [["調整中", 1], ["調整済み", 2]], {}, {class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"} %>
+                  </div>
+                  <br>
+                  <h3 class="font-bold text-gray-800 dark:text-white">
+                    撮影
+                  </h3>
+                  <div>
+                    撮影日時
+                    <%= f.date_field :shooting_datetime, disabled: @applicant.applicant_status_id >= 5, class: "py-3 px-4 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                    <%= f.time_select :shooting_datetime, {minute_step: 1, min:"00:00"}, disabled: @applicant.applicant_status_id >= 5, class:"border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                  <div>
+                    カメラマン・スタジオ
+                    <%= f.text_field :photographer_studio, {disabled: @applicant.applicant_status_id >= 5, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"} %>
+                  </div>
+                  <div>
+                    調整状況
+                    <%= f.select :shooting_adjustment_id, [["調整中", 1], ["調整済み", 2]], {}, {class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"} %>
+                  </div>
+                <% end %>
+                <% if @applicant.applicant_status_id >= 2 %>
+                  <br>
+                  <h3 class="font-bold text-gray-800 dark:text-white">
+                    源氏名
+                  </h3>
+                  <%= f.text_field :professional_name, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  <br>
+                  <h3 class="font-bold text-gray-800 dark:text-white">
+                    面接
+                  </h3>
+                  <div>
+                    面接日時
+                    <%= f.date_field :interview_datetime, disabled: @applicant.applicant_status_id >= 3, class: "py-3 px-4 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                    <%= f.time_select :interview_datetime, {minute_step: 1, min:"00:00"}, disabled: @applicant.applicant_status_id >= 3, class:"border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                  <div>
+                    面接担当者
+                    <%= f.select :interviewer_id, @interviewer_select, {include_blank: true}, {disabled: @applicant.applicant_status_id >= 3, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"} %>
+                  </div>
+                  <br>
+                  <h3 class="font-bold text-gray-800 dark:text-white">
+                    通過区分
+                  </h3>
+                  <%= f.text_field :pass_classification, disabled: true, class:"py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  <br>
+                  <br>
+                  <h3 class="font-bold text-gray-800 dark:text-white">
+                    費用
+                  </h3>
+                  <div class="inline-block align-middle">
+                    <% if @change_status_flag %>
+                      <div class="table border-collapse table-auto w-full divide-y divide-gray-200 dark:divide-neutral-700">
+                        <div class="table-header-group">
+                          <div class="table-row">
+                            <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500 min-w-32">内容</div>
+                            <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500 min-w-24">料金（円）</div>
+                            <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500 min-w-40">注釈</div>
+                            <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500 min-w-32">受け取り日</div>
+                            <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">追加/削除</div>
+                          </div>
+                        </div>
+                        <div class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+                          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                            <input type="text" id="applicant_fee_name_default" class="w-full py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" />
+                          </div>
+                          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                            <input type="text" id="applicant_fee_amount_default" class="w-full py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" />
+                          </div>
+                          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                            <input type="text" id="applicant_fee_annotation_default" class="w-full py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" />
+                          </div>
+                          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-center text-gray-800 dark:text-neutral-200 min-w-32">
+                            <button type="button" id="reflect-interview-date" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+                              ↓面接日を反映
+                            </button>
+                          </div>
+                          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                            <div class="inline-block align-middle">
+                              <%= link_to_add_association "追加", f, :applicant_fees, id:'add_applicant_fee_button', class:'py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none', data: {association_insertion_node: '#applicant_fees', association_insertion_method: :append} %>
+                            </div>
+                          </div>
+                        </div>
+                        <div id="applicant_fees" class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+                          <%= f.fields_for :applicant_fees do |fee| %>
+                            <%= render 'applicant_fee_fields', f: fee %>
+                          <% end %>
+                        </div>
+                      </div>
+                    <% else %>
+                      <div class="table border-collapse table-auto w-full divide-y divide-gray-200 dark:divide-neutral-700">
+                        <div class="table-header-group">
+                          <div class="table-row">
+                            <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500 min-w-32">内容</div>
+                            <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500 min-w-24">料金（円）</div>
+                            <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500 min-w-40">注釈</div>
+                            <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500 min-w-32">受け取り日</div>
+                          </div>
+                        </div>
+                        <div id="applicant_fees" class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+                          <% @applicant.applicant_fees.each do |fee| %>
+                            <div class="table-row">
+                              <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200 min-w-32">
+                                <input type="text" value="<%= fee.fee_name %>" class="w-full py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" disabled>
+                              </div>
+                              <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200 min-w-24">
+                                <input type="text" value="<%= fee.amount %>" class="w-full py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" disabled>
+                              </div>
+                              <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200 min-w-40">
+                                <input type="text" value="<%= fee.annotation %>" class="w-full py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" disabled>
+                              </div>
+                              <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200 min-w-32">
+                                <input type="text" value="<%= fee.receive_date %>" class="w-full py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" disabled>
+                              </div>
+                            </div>
+                          <% end %>
+                        </div>
+                      </div>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+              <div id="tab-mail" class="hidden" role="tabpanel" aria-labelledby="tab-mail-btn">
+                <button type="button" id="reply-from-thread" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+                  やりとりから返信
+                </button>
+                <button type="button" id="create-new" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+                  新規メッセージを作成
+                </button>
+                <button type="button" onClick="usePassClassificationMailTemplate()" id="use-mail-template" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-mail-templates-modal">
+                  メールテンプレートを使用
+                </button>
+                <button type="button" id="back" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+                  戻る
+                </button>
+                <div id="thread-content" style="display:none;">
+                  <div id="threads-range-select" class="my-2">
+                    <label for="threads-range">表示範囲：</label>
+                    <select id="threads-range">
+                      <option value="0">最新10件</option>
+                      <option value="10">11～20件</option>
+                      <option value="20">21～30件</option>
+                      <option value="30">31～40件</option>
+                      <option value="40">41～50件</option>
+                    </select>
+                  </div>
+                  <div id="threads-spinner" class="my-2" style="display:none;">
+                    <svg class="animate-spin h-6 w-6 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                    </svg>
+                  </div>
+                  <div id="threads-radio-list" class="my-2">
+                    ここにやりとりの一覧が表示されます。
+                  </div>
+                  <button type="button" id="check-messages" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-messages-modal">
+                    メッセージ確認
+                  </button>
+                </div>
+                <div id="mail-content" style="display:none;">
+                  <div id="reply-target-name"></div>
+                  <input id="reply-target-id" name="reply_target_id" class="hidden"></input>
+                  <div class="hs-accordion-group" data-hs-accordion-always-open="">
+                    <div class="hs-accordion" id="hs-basic-always-open-heading-one">
+                      <button type="button" class="hs-accordion-toggle hs-accordion-active:text-blue-600 py-3 inline-flex items-center gap-x-3 font-semibold text-start text-gray-800 hover:text-gray-500 rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:hs-accordion-active:text-blue-500 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:outline-none dark:focus:text-neutral-400" aria-controls="hs-basic-always-open-collapse-one">
+                        <svg class="hs-accordion-active:hidden block size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M5 12h14"></path>
+                          <path d="M12 5v14"></path>
+                        </svg>
+                        <svg class="hs-accordion-active:block hidden size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M5 12h14"></path>
+                        </svg>
+                        やりとりの内容
+                      </button>
+                      <div id="hs-basic-always-open-collapse-one" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-basic-always-open-heading-one">
+                        <div id="reply-target-chat-container">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex justify-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+                    <input value="" class="w-full" type="text" name="mail_subject" id="applicant_mail_subject">
+                  </div>
+                  <div class="flex justify-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+                    <textarea class="w-full" rows="10" name="mail_body" id="applicant_mail_body"></textarea>
+                  </div>
+                  <button type="button" id="check-mail-preview" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-mail-preview-modal">
+                    メールプレビュー
+                  </button>
+                </div>
+              </div>
+              <div id="tab-line" class="hidden" role="tabpanel" aria-labelledby="tab-line-btn">
+                送信先ID：<%= f.text_field :notification_group_id, class:"py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                (※空欄の場合、デフォルトの送信先に送信されます。)
+                <br>
+                <button type="button" id="use-line-template" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-green-600 text-white hover:bg-green-600 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-line-templates-modal">
+                  LINEテンプレートを使用
+                </button>
+                <div class="flex justify-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+                  <textarea class="w-full" rows="10" name="line_body" id="applicant_line_body"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p>
+  </div>
+</div>
+<% end %>
+
+<!-- 画像の更新モーダルの定義 -->
+<div id="hs-latest-images-modal" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+  <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+    <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-scrollable">
+      <div class="sticky top-0 z-10 bg-white dark:bg-gray-800 flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+        <h3 class="font-bold text-gray-800 dark:text-white">
+          画像一覧
+        </h3>
+        <button type="button" id="update_image" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay-close="#hs-latest-images-modal">
+          画像を更新
+        </button>
+        <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#hs-latest-images-modal">
+          <span class="sr-only">Close</span>
+          <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="p-4">
+        <div id="images-spinner" class="my-2" style="display:none;">
+          <svg class="animate-spin h-6 w-6 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+          </svg>
+        </div>
+        <input id="target-image" type="hidden" value="image_one">
+        <input id="image-filename" type="hidden" value="">
+        <input id="image-contentType" type="hidden" value="">
+        <input id="image-data" type="hidden" value="">
+        <div id="latest-images" class="chat-container overflow-x-auto border-t dark:border-gray-700">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- メールテンプレート表示モーダルの定義 -->
+<div id="hs-mail-templates-modal" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+  <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+    <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-scrollable">
+      <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+        <h3 class="font-bold text-gray-800 dark:text-white">
+          メールテンプレート
+        </h3>
+        <button type="button" id="select-mail-template" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay-close="#hs-mail-templates-modal">
+          テンプレートを適用
+        </button>
+        <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#hs-mail-templates-modal">
+          <span class="sr-only">Close</span>
+          <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="p-4">
+        <div class="my-2">
+          <select id="mail-template-select">
+            <% @mail_template_select.each do |mail_template| %>
+              <option data-subject='<%= mail_template[:subject] %>' data-body='<%= mail_template[:body] %>' value='<%= mail_template[:value] %>'><%= mail_template[:text] %></option>
+            <% end %>
+          </select>
+        </div>
+        <div id="mail-template-subject" class="chat-container overflow-x-auto border-t dark:border-gray-700">
+        </div>
+        <div id="mail-template-body" class="chat-container overflow-x-auto overflow-y-auto border-t dark:border-gray-700">
+        </div>
+      </div>
+      <div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- スレッド内のメッセージ表示モーダルの定義 -->
+<div id="hs-messages-modal" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+  <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+    <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-scrollable">
+      <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+        <h3 class="font-bold text-gray-800 dark:text-white">
+          やりとりの表示
+        </h3>
+        <button type="button" id="reply-message" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay-close="#hs-messages-modal">
+          このやりとりに返信する
+        </button>
+        <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#hs-messages-modal">
+          <span class="sr-only">Close</span>
+          <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="p-4">
+        <div id="messages-spinner" class="my-2" style="display:none;">
+          <svg class="animate-spin h-6 w-6 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+          </svg>
+        </div>
+        <div id="chat-container" class="chat-container overflow-x-auto">
+        </div>
+      </div>
+      <div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 返信メールのプレビューモーダルの定義 -->
+<div id="hs-mail-preview-modal" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+  <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+    <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-scrollable">
+      <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+        <h3 class="font-bold text-gray-800 dark:text-white">
+          メールプレビュー
+        </h3>
+        <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#hs-mail-preview-modal">
+          <span class="sr-only">Close</span>
+          <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="p-4">
+        <div class="w-full border p-4 bg-white" id="mail-body-preview">
+        </div>
+      </div>
+      <div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LINEテンプレート表示モーダルの定義 -->
+<div id="hs-line-templates-modal" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+  <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+    <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-scrollable">
+      <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+        <h3 class="font-bold text-gray-800 dark:text-white">
+          LINEテンプレート選択
+        </h3>
+        <button type="button" id="select-line-template" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay-close="#hs-line-templates-modal">
+          テンプレートを適用
+        </button>
+        <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#hs-line-templates-modal">
+          <span class="sr-only">Close</span>
+          <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="p-4">
+        <div class="my-2">
+          <select id="line-template-select">
+            <% @line_template_select.each do |line_template| %>
+              <option data-body='<%= line_template[:body] %>' value='<%= line_template[:value] %>'><%= line_template[:text] %></option>
+            <% end %>
+          </select>
+        </div>
+        <div id="line-template-body" class="chat-container overflow-x-auto overflow-y-auto border-t dark:border-gray-700">
+        </div>
+      </div>
+      <div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+      </div>
+    </div>
+  </div>
+</div>
+
+<%= javascript_include_tag('applicants') %>
+
+<script>
+  // 変数を全て定義。
+  // 写真関連
+  const targetImage = document.getElementById('target-image');
+  const imageFilename = document.getElementById('image-filename');
+  const imageContentType = document.getElementById('image-contentType');
+  const imageData = document.getElementById('image-data');
+  const latestImagesList = document.getElementById('latest-images');
+  const updateImageButton = document.getElementById('update_image');
+  // 応募者パラメータ、ステータス関連
+  const applicantApplicantDetailAttributesPreferredStoreId = document.getElementById('applicant_applicant_detail_attributes_preferred_store_id');
+  const applicantApplicantDetailAttributesName = document.getElementById('applicant_applicant_detail_attributes_name');
+  const applicantApplicantDetailAttributesMailAdress = document.getElementById('applicant_applicant_detail_attributes_mail_address');
+  const applicantInterviewDatetime = document.getElementById('applicant_interview_datetime');
+  const reflectInterviewDateButton = document.getElementById('reflect-interview-date');
+  const applicantApplicantStatusId = document.getElementById('applicant_applicant_status_id');
+  const statusTemplate = document.getElementById('status_template');
+  const statusMailTemplateSelect = document.getElementById('status_mail_template_select');
+  const statusLineTemplateSelect = document.getElementById('status_line_template_select');
+  const updateStatusTemplateButton = document.getElementById('update_status_template_button');
+  // ステータス更新時のパラメータ
+  const updateParams = document.getElementById('update_params');
+  // 費用関連
+  const applicantFeeNameDefault = document.getElementById('applicant_fee_name_default')
+  const applicantFeeAmountDefault = document.getElementById('applicant_fee_amount_default')
+  const applicantFeeAnnotationDefault = document.getElementById('applicant_fee_annotation_default')
+  // スレッド、新規、共通ボタン
+  const replyFromThreadButton = document.getElementById('reply-from-thread');
+  const createNewButton = document.getElementById('create-new');
+  const useMailTemplateButton = document.getElementById('use-mail-template');
+  const mailTemplateSelect = document.getElementById('mail-template-select');
+  const selectMailTemplateButton = document.getElementById('select-mail-template');
+  const mailTemplateSubject = document.getElementById('mail-template-subject');
+  const mailTemplateBody = document.getElementById('mail-template-body');
+  const backButton = document.getElementById('back');
+  // スレッド関連
+  const threadContent = document.getElementById('thread-content');
+  const threadsRangeSelect = document.getElementById('threads-range-select');
+  const threadsRange = document.getElementById('threads-range');
+  const threadsDiv = document.getElementById('threads-radio-list');
+  const threadSpinner = document.getElementById('threads-spinner');
+  const checkMessagesButton = document.getElementById('check-messages');
+  // モーダル関連
+  const chatContainer = document.getElementById('chat-container');
+  const messageSpinner = document.getElementById('messages-spinner');
+  const replyMessageButton = document.getElementById('reply-message');
+  // メール関連
+  const sendMailFlag = document.getElementById('send_mail_flag');
+  const mailContent = document.getElementById('mail-content');
+  const replyTargetName = document.getElementById('reply-target-name');
+  const replyTargetId = document.getElementById('reply-target-id');
+  const reselectReplyTarget = document.getElementById('reselect-reply-target');
+  const replyTargetChatAccordion = document.getElementById('hs-basic-always-open-heading-one');
+  const replyTargetChatContainer = document.getElementById('reply-target-chat-container');
+  const applicantMailSubject = document.getElementById('applicant_mail_subject');
+  const applicantMailBody = document.getElementById('applicant_mail_body');
+  const checkMailPreviewButton = document.getElementById('check-mail-preview');
+  const mailBodyPreview = document.getElementById('mail-body-preview');
+  // LINE関連
+  const sendLineFlag = document.getElementById('send_line_flag');
+  const lineTemplateSelect = document.getElementById('line-template-select');
+  const lineTemplateBody = document.getElementById('line-template-body');
+  const selectLineTemplateButton = document.getElementById('select-line-template');
+  const applicantLineBody = document.getElementById('applicant_line_body');
+
+
+  // date_fieldは初期値を保持してそっちで更新かける不具合があるので、強制的に書き換えておく。
+  if (applicantInterviewDatetime != null) {
+    applicantInterviewDatetime.addEventListener('change', function (event) {
+      document.getElementById("applicant_interview_datetime_1i").value = applicantInterviewDatetime.value.split("-")[0];
+      document.getElementById("applicant_interview_datetime_2i").value = applicantInterviewDatetime.value.split("-")[1];
+      document.getElementById("applicant_interview_datetime_3i").value = applicantInterviewDatetime.value.split("-")[2];
+    })
+  }
+  if (document.getElementById("applicant_training_datetime") != null) {
+    document.getElementById("applicant_training_datetime").addEventListener('change', function (event) {
+      document.getElementById("applicant_training_datetime_1i").value = document.getElementById("applicant_training_datetime").value.split("-")[0];
+      document.getElementById("applicant_training_datetime_2i").value = document.getElementById("applicant_training_datetime").value.split("-")[1];
+      document.getElementById("applicant_training_datetime_3i").value = document.getElementById("applicant_training_datetime").value.split("-")[2];
+    })
+  }
+  if (document.getElementById("applicant_shooting_datetime") != null) {
+    document.getElementById("applicant_shooting_datetime").addEventListener('change', function (event) {
+      document.getElementById("applicant_shooting_datetime_1i").value = document.getElementById("applicant_shooting_datetime").value.split("-")[0];
+      document.getElementById("applicant_shooting_datetime_2i").value = document.getElementById("applicant_shooting_datetime").value.split("-")[1];
+      document.getElementById("applicant_shooting_datetime_3i").value = document.getElementById("applicant_shooting_datetime").value.split("-")[2];
+    })
+  }
+
+
+  // 初期値を適用
+  document.addEventListener('DOMContentLoaded', async function() {
+    updateParams.style.display = 'none'; // 更新パラメータ非表示
+    statusTemplate.style.display = 'none'; // ステータステンプレート非表示
+    // beforeApplicantStatusIdが1以外ならステータステンプレートを表示
+    if (`<%= @beforeApplicantStatusId %>` != 1) {
+      statusTemplate.style.display = 'block'
+      await updateStatusTemplate();
+    }
+    useMailTemplateButton.style.display = 'none'; // メールテンプレートを使用ボタン非表示
+    backButton.style.display = 'none'; // 戻るボタン非表示
+    checkMessagesButton.style.display = 'none'; // メッセージ確認ボタン非表示
+
+    // メール本文が存在したら、メール送信フラグをチェック
+    applicantMailBody.addEventListener('focusout', function (event) {
+      if (applicantMailBody.value == '') {
+        sendMailFlag.checked = false
+      } else {
+        sendMailFlag.checked = true
+      }
+    })
+
+    // LINE本文が存在したら、LINE送信フラグをチェック
+    applicantLineBody.addEventListener('focusout', function (event) {
+      if (applicantLineBody.value == '') {
+        sendLineFlag.checked = false
+      } else {
+        sendLineFlag.checked = true
+      }
+    })
+
+    // 最新の画像を選択用に取得して表示
+    latestImages = await getLatestImages(`<%= @applicant.id %>`);
+    latestImages.forEach(image => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "image-wrapper";
+
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = "selectedImage";
+      radio.value = image.filename;
+      wrapper.appendChild(radio);
+
+      // クリックでラジオ選択およびパラメータ設定
+      wrapper.addEventListener("click", () => {
+        radio.checked = true;
+        radio.dispatchEvent(new Event("change"));
+        imageFilename.value = image.filename;
+        imageContentType.value = image.contentType;
+        imageData.value = image.data;
+      });
+
+      const label = document.createElement("label");
+      label.innerHTML = image.filename;
+      label.className = "ml-2 text-sm font-medium text-gray-900 dark:text-gray-300";
+      wrapper.appendChild(label);
+
+      const img = document.createElement("img");
+      img.src = `data:${image.content_type};base64,${image.data}`;
+      img.alt = image.filename;
+      wrapper.appendChild(img);
+
+      latestImagesList.appendChild(wrapper);
+    });
+
+    // 最新50件のやりとりを表示用に取得しておく
+    threadsDiv.innerHTML = '';
+    const threads = await getThreads(
+      applicantApplicantDetailAttributesPreferredStoreId.selectedOptions[0].dataset.storeGroupId,
+      applicantApplicantDetailAttributesMailAdress.value,
+      0,
+      50
+    );
+    checkMessagesButton.style.display = 'block'; // メッセージ確認ボタン表示
+    await renderThreadsRadio(applicantApplicantDetailAttributesPreferredStoreId.selectedOptions[0].dataset.storeGroupId, threads);
+
+    // 表示するやりとりの変更
+    threadsRange.addEventListener('change', function (event) {
+      renderThreadsRadio(applicantApplicantDetailAttributesPreferredStoreId.selectedOptions[0].dataset.storeGroupId, threads, threadsRange.value);
+    })
+  });
+
+
+  // 画像の更新を押下
+  updateImageButton.addEventListener('click', async function() {
+    // 画像が選択されていない場合
+    if (imageData.value == "") {
+      alert("画像を選択してください。");
+      return
+    }
+
+    if (window.confirm("更新しますか？\n押下すると上書きされ、元の画像は消えます。")) {
+      await updateImage(`<%= @applicant.id %>`, targetImage.value, imageFilename.value, imageContentType.value, imageData.value)
+    }
+  })
+
+
+  // 費用追加時に、defaultを反映
+  if (`<%= @beforeApplicantStatusId %>` >= 2) {
+    applicantFees = document.getElementById("applicant_fees")
+    applicantFees.addEventListener('cocoon:after-insert', function(e){
+      targetNodes = e.srcElement.children[e.srcElement.children.length - 1].children
+      targetNodes[0].children[0].value = applicantFeeNameDefault.value
+      targetNodes[1].children[0].value = applicantFeeAmountDefault.value
+      targetNodes[2].children[0].value = applicantFeeAnnotationDefault.value
+      applicantFeeNameDefault.value = ""
+      applicantFeeAmountDefault.value = ""
+      applicantFeeAnnotationDefault.value = ""
+    })
+  }
+
+
+  // 面接日を反映ボタンを押下
+  if (reflectInterviewDateButton != null) {
+    reflectInterviewDateButton.addEventListener('click', async function (event) {
+      applicantFees = document.getElementById("applicant_fees")
+      Array.from(applicantFees.children).forEach((applicantFee) => {
+        if (applicantFee.tagName == "DIV" && applicantFee.style.display != "none") {
+          applicantFee.children[3].children[0].value = applicantInterviewDatetime.value
+        }
+      })
+    });
+  }
+
+
+  // ステータス変更の際、メールとLINEのテンプレートを表示、必要なパラメータを表示/非表示
+  applicantApplicantStatusId.addEventListener('change', async function(e) {
+    applicantStatusId = e.srcElement.value
+    if (applicantStatusId != 1) {
+      if (`<%= @beforeApplicantStatusId %>` != 1 || applicantStatusId != 2) {
+        statusTemplate.style.display = 'block';
+        await updateStatusTemplate();
+      }
+    } else {
+      statusTemplate.style.display = 'none';
+    }
+    updateParams.style.display = 'none';
+    switch (`<%= @beforeApplicantStatusId %>`) {
+      case "1":
+        if (applicantStatusId == 2) {
+          updateParams.style.display = '';
+        }
+        break;
+      case "5":
+        if (applicantStatusId == 6) {
+          updateParams.style.display = '';
+        }
+        break;
+      default:
+    }
+  });
+
+
+  // メッセージ更新の押下。
+  updateStatusTemplateButton.addEventListener('click', async function (event) {
+    if (statusMailTemplateSelect.options.length !== 0) {
+      selectedMailTemplate = statusMailTemplateSelect.selectedOptions[0]
+      await updateMailSubjectBody(selectedMailTemplate.dataset.subject, selectedMailTemplate.dataset.body);
+    } else {
+      await updateMailSubjectBody('', '');
+    }
+    if (statusLineTemplateSelect.options.length !== 0) {
+      selectedLineTemplate = statusLineTemplateSelect.selectedOptions[0]
+      await updateLineBody(selectedLineTemplate.dataset.body);
+    } else {
+      await updateLineBody('');
+    }
+  })
+
+
+  // やりとりから返信を押下。
+  replyFromThreadButton.addEventListener('click', async function (event) {
+    replyFromThreadButton.style.display = 'none'; // やりとりボタン非表示
+    createNewButton.style.display = 'none'; // 新規ボタン非表示
+    backButton.style.display = ''; // 戻るボタン表示
+    threadContent.style.display = ''; // やりとり表示
+  });
+
+
+  // 新規メッセージを作成を押下。
+  createNewButton.addEventListener('click', async function (event) {
+    replyFromThreadButton.style.display = 'none'; // やりとりボタン非表示
+    createNewButton.style.display = 'none'; // 新規ボタン非表示
+    backButton.style.display = ''; // 戻るボタン表示
+    mailContent.style.display = ''; // mail-contentの表示。
+    // やりとりは非表示。
+    replyTargetChatAccordion.style.display = 'none';
+    // subjectは表示。
+    applicantMailSubject.style.display = '';
+    // replayTargetは指定しない。
+    replyTargetName.innerHTML = '新規作成';
+    replyTargetId.value = '';
+    // メールテンプレートを使用は表示。
+    useMailTemplateButton.style.display = '';
+  });
+
+
+  // メッセージ確認を押下。
+  checkMessagesButton.addEventListener('click', async function (event) {
+    replyMessageButton.style.display = 'none';
+
+    // 選択されているスレッドIDを取得
+    const selectedRadio = document.querySelector('input[name="thread-radio"]:checked');
+    if (!selectedRadio) {
+      document.getElementById('chat-container').innerHTML = '<div class="text-gray-400">スレッドが選択されていません</div>';
+      return;
+    }
+    chatContainer.innerHTML = '';
+    const threadId = selectedRadio.value;
+    // メッセージ取得
+    const messages = await getMessages(applicantApplicantDetailAttributesPreferredStoreId.selectedOptions[0].dataset.storeGroupId, threadId);
+    // 表示
+    renderChatMessages(messages);
+    replyMessageButton.style.display = '';
+  });
+
+
+  // このやりとりに返信するを押下。
+  replyMessageButton.addEventListener('click', async function (event) {
+    const selectedRadio = document.querySelector('input[name="thread-radio"]:checked');
+    replyTargetName.innerHTML = "返信先：" + selectedRadio.dataset.subject;
+    replyTargetId.value = selectedRadio.value;
+    // やりとりの範囲指定、スレッドリストを非表示。
+    threadsRangeSelect.style.display = 'none';
+    threadsDiv.style.display = 'none';
+    checkMessagesButton.style.display = 'none';
+    // mail-contentの表示。
+    mailContent.style.display = '';
+    // やりとりは表示。
+    replyTargetChatAccordion.style.display = '';
+    replyTargetChatContainer.innerHTML = chatContainer.innerHTML;
+    // subjectは非表示。
+    applicantMailSubject.style.display = 'none';
+    // メールテンプレートを使用は表示。
+    useMailTemplateButton.style.display = '';
+  });
+
+
+  // メールテンプレートの選択を変更。
+  mailTemplateSelect.addEventListener('change', async function (event) {
+    mailTemplateSubject.innerHTML = mailTemplateSelect.selectedOptions[0].dataset.subject;
+    mailTemplateBody.innerHTML = mailTemplateSelect.selectedOptions[0].dataset.body.replace(/\r?\n/g, "<br>");
+  })
+
+
+  // (メール)テンプレートを適用を押下。
+  selectMailTemplateButton.addEventListener('click', async function (event) {
+    const subject = mailTemplateSubject.innerHTML;
+    const body = mailTemplateBody.innerHTML.replace(/\<br\>/g, "\r\n", );
+
+    await updateMailSubjectBody(mailTemplateSubject.innerHTML, mailTemplateBody.innerHTML.replace(/\<br\>/g, "\r\n", ));
+  })
+
+
+  // メールプレビューを押下。
+  checkMailPreviewButton.addEventListener('click', async function (event) {
+    mailBodyPreview.innerHTML = applicantMailBody.value.replace(/\r?\n/g, "<br>")
+  })
+
+
+  // 戻るを押下。
+  backButton.addEventListener('click', async function (event) {
+    replyFromThreadButton.style.display = ''; // やりとりボタン表示
+    createNewButton.style.display = ''; // 新規ボタン表示
+    useMailTemplateButton.style.display = 'none'; // メールテンプレート使用ボタン非表示
+    backButton.style.display = 'none'; // 戻るボタン非表示
+    threadsRangeSelect.style.display = ''; // やりとりの範囲指定の表示。
+    threadsDiv.style.display = ''; // スレッドリストの表示。
+    checkMessagesButton.style.display = 'none';
+    threadContent.style.display = 'none'; // thread-contentの非表示
+    mailContent.style.display = 'none'; // mail-contentの非表示
+  })
+
+
+  // LINEテンプレートの選択を変更。
+  lineTemplateSelect.addEventListener('change', async function (event) {
+    lineTemplateBody.innerHTML = lineTemplateSelect.selectedOptions[0].dataset.body.replace(/\r?\n/g, "<br>");
+  })
+
+
+  // (LINE)テンプレートを適用を押下。
+  selectLineTemplateButton.addEventListener('click', async function (event) {
+    const body = lineTemplateBody.innerHTML.replace(/\<br\>/g, "\r\n", );
+    await updateLineBody(body)
+  })
+
+
+  // 更新対象の画像を1と2で切り替える関数
+  function updateTarget(target) {
+    targetImage.value = target;
+  }
+
+
+  // 選考中から面接準備中にする場合、メールテンプレートの使用を押下した場合に、下処理を行う。
+  function usePassClassificationMailTemplate() {
+    if (`<%= @beforeApplicantStatusId %>` == 1 && (applicantApplicantStatusId.value == 2)) {
+      // selectを非表示。
+      mailTemplateSelect.style.display = 'none';
+      selected_pass_classification = document.getElementById('applicant_pass_classification_id').selectedOptions[0]
+      if (selected_pass_classification !== undefined) {
+        mailTemplateSubject.innerHTML = selected_pass_classification.dataset.mailtemplatesubject;
+        mailTemplateBody.innerHTML = selected_pass_classification.dataset.mailtemplatebody.replace(/\r?\n/g, "<br>");
+      }
+    } else {
+      // selectを表示。
+      mailTemplateSelect.style.display = '';
+      mailTemplateSubject.innerHTML = mailTemplateSelect.selectedOptions[0].dataset.subject;
+      mailTemplateBody.innerHTML = mailTemplateSelect.selectedOptions[0].dataset.body.replace(/\r?\n/g, "<br>");
+    }
+  }
+
+
+  async function updateStatusTemplate() {
+    statusMailTemplateSelect.innerHTML = '';
+    statusLineTemplateSelect.innerHTML = '';
+    templates = await getTemplates(applicantApplicantDetailAttributesPreferredStoreId.selectedOptions[0].dataset.storeGroupId, applicantApplicantStatusId.value);
+    templates.mail.forEach((template)=>{
+      var op = document.createElement('option');
+      op.text = template.name
+      op.dataset.subject = template.subject
+      op.dataset.body = template.body
+      op.value = template.id
+      // default_flag
+      if (template.default_flag){
+        op.selected= true
+      }
+      statusMailTemplateSelect.appendChild(op);
+    })
+    templates.line.forEach((template)=>{
+      var op = document.createElement('option');
+      op.text = template.name
+      op.dataset.body = template.body
+      op.value = template.id
+      // default_flag
+      if (template.default_flag){
+        op.selected= true
+      }
+      statusLineTemplateSelect.appendChild(op);
+    })
+  }
+
+
+  // subjectとbodyを元に変数を置換してメールの内容を更新。
+  async function updateMailSubjectBody(subject, body) {
+    mailParams = {}
+    mailParams.applicantName = applicantApplicantDetailAttributesName.value
+    mailParams.senderName = "<%= session[:user_name] %>"
+
+    // @beforeApplicantStatusIdが1かどうかで、pass_classification_nameとfeesの取得場所が変わる。
+    // また、面接日時、面接担当者名と源氏名を取得。
+    passClassificationFees = []
+    if ("<%= @beforeApplicantStatusId %>" == "1") {
+      mailParams.passClassificationName = applicantPassClassificationId.selectedOptions[0].text
+      Array.from(passClassificationFeeTbody.children).forEach(function (passClassificationFee) {
+        passClassificationFees.push({
+          fee_name: passClassificationFee.children[0].textContent,
+          amount: passClassificationFee.children[1].textContent,
+          annotation: passClassificationFee.children[2].textContent
+        })
+      })
+      mailParams.passClassificationFees = passClassificationFees
+    } else {
+      mailParams.passClassificationName = mailTemplateSelect.selectedOptions[0].value
+      Array.from(document.getElementById("applicant_fees").children).forEach((applicantFee) => {
+        if (applicantFee.tagName == "DIV") {
+          passClassificationFees.push(
+            {
+              fee_name: applicantFee.children[0].children[0].value,
+              amount: applicantFee.children[1].children[0].value,
+              annotation: applicantFee.children[2].children[0].value
+            }
+          )
+        }
+      })
+      mailParams.passClassificationFees = passClassificationFees
+      mailParams.interviewDatetime = document.getElementById("applicant_interview_datetime_2i").value
+        + "/"
+        + Number(document.getElementById("applicant_interview_datetime_3i").value)
+        + " "
+        + Number(document.getElementById("applicant_interview_datetime_4i").value)
+        + "時"
+      if (document.getElementById("applicant_interview_datetime_5i").value != "00") {
+        mailParams.interviewDatetime = mailParams.interviewDatetime + Number(document.getElementById("applicant_interview_datetime_5i").value) + "分"
+      }
+      mailParams.interviewerName = document.getElementById("applicant_interviewer_id").selectedOptions[0].textContent
+      mailParams.professionalName = document.getElementById("applicant_professional_name").value
+    }
+
+    mailTemplate = await createApplicantMail(subject, body, mailParams)
+    applicantMailSubject.value = mailTemplate.subject
+    applicantMailBody.value = mailTemplate.body
+    sendMailFlag.checked = false
+    if (applicantMailSubject.value != '' || applicantMailBody.value != '') {
+      sendMailFlag.checked = true
+    }
+  }
+
+
+  async function updateLineBody(body) {
+    lineParams = {}
+    lineParams.applicantName = applicantApplicantDetailAttributesName.value
+    lineParams.senderName = "<%= session[:user_name] %>"
+    // @beforeApplicantStatusIdが1でなければ、面接日時、面接担当者名と源氏名を取得。
+    lineParams.interviewDatetime = document.getElementById("applicant_interview_datetime_2i").value
+      + "/"
+      + Number(document.getElementById("applicant_interview_datetime_3i").value)
+      + " "
+      + Number(document.getElementById("applicant_interview_datetime_4i").value)
+      + "時"
+    if (document.getElementById("applicant_interview_datetime_5i").value != "00") {
+      lineParams.interviewDatetime = lineParams.interviewDatetime + Number(document.getElementById("applicant_interview_datetime_5i").value) + "分"
+    }
+    if ("<%= @beforeApplicantStatusId %>" != "1") {
+      lineParams.interviewerName = document.getElementById("applicant_interviewer_id").selectedOptions[0].textContent
+      lineParams.professionalName = document.getElementById("applicant_professional_name").value
+    }
+
+    lineTemplate = await createApplicantLine(body, lineParams)
+    applicantLineBody.value = lineTemplate
+    sendLineFlag.checked = false
+    if (applicantLineBody.value != '') {
+      sendLineFlag.checked = true
+    }
+  }
+</script>

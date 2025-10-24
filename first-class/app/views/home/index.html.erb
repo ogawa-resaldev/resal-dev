@@ -1,0 +1,31 @@
+<div class="mt-7 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="p-4 sm:p-7">
+    <div class="text-center">
+      <h1 class="block text-2xl font-bold text-gray-800 dark:text-white">お知らせ</h1>
+    </div>
+
+    <div class="mt-5">
+      <% if @reservations_expired.count > 0 %>
+        <div class="mt-2 bg-red-100 border border-red-200 text-sm text-red-800 rounded-lg p-4 dark:bg-red-800/10 dark:border-red-900 dark:text-red-500" role="alert">
+          <a href=<%= @reservations_expired_link %>>
+            <span class="font-bold">予約日を過ぎた予約があります。<%= @reservations_expired.count %>件</span>
+          </a>
+        </div>
+      <% end %>
+      <% if @reservations_today.count > 0 %>
+        <div class="mt-2 bg-yellow-100 border border-yellow-200 text-sm text-yellow-800 rounded-lg p-4 dark:bg-yellow-800/10 dark:border-yellow-900 dark:text-yellow-500" role="alert">
+          <a href=<%= @reservations_today_link %>>
+            <span class="font-bold">本日遂行予定の予約があります。<%= @reservations_today.count %>件</span>
+          </a>
+        </div>
+      <% end %>
+      <% if @reservations_unsettled.count > 0 %>
+        <div class="mt-2 bg-yellow-100 border border-yellow-200 text-sm text-yellow-800 rounded-lg p-4 dark:bg-yellow-800/10 dark:border-yellow-900 dark:text-yellow-500" role="alert">
+          <a href=<%= @reservations_unsettled_link %>>
+            <span class="font-bold">未確定の予約があります。<%= @reservations_unsettled.count %>件</span>
+          </a>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

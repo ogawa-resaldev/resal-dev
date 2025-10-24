@@ -1,0 +1,103 @@
+<div class="mt-7 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="p-4 sm:p-7">
+    <div class="text-center">
+      <h1 class="block text-2xl font-bold text-gray-800 dark:text-white">帝コイン入出庫(一度に10件まで登録可能)</h1>
+    </div>
+
+    <%= form_with(model: @mikado_coin_flow_collection, url: mikado_coin_flows_path, local: true) do |f| %>
+      <div class="table border-collapse table-auto w-full divide-y divide-gray-200 dark:divide-neutral-700">
+        <div class="table-header-group">
+          <div class="table-row">
+            <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">セラピスト</div>
+            <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">コイン</div>
+            <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">入出庫</div>
+            <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">理由</div>
+          </div>
+        </div>
+        <div class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+            <div id="therapist-autocomplete"></div>
+          </div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+            <input type="text" id="mikado_coin_flow_coin_default" value=0 class="py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" />
+          </div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+            <select id="mikado_coin_flow_direction_default" class="py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" >
+              <% @directions_select.each do |direction_select| %>
+                <option value=<%= direction_select[0] %>>
+                  <%= direction_select[1] %>
+                </option>
+              <% end %>
+            </select>
+          </div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+            <input type="text" id="mikado_coin_flow_reason_default" class="py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" />
+          </div>
+          <div class="inline-block align-middle">
+            <button type="button" onClick="addFlow()" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+              帝コイン入出庫追加
+            </button>
+          </div>
+        </div>
+        <div id="mikado_coin_flows" class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+          <%= f.fields_for :mikado_coin_flows do |mikado_coin_flow| %>
+            <%= render 'mikado_coin_flow_fields', f: mikado_coin_flow %>
+          <% end %>
+        </div>
+        <div class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+            <button type="submit", onClick="return check('帝コイン入出庫を登録しますか？','create-mikado-coin-flow')" id:"create-mikado-coin-flow", class="py-3 px-4 inline-flex justify-start items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+              入出庫作成
+            </button>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<%= javascript_include_tag('therapist_autocomplete') %>
+
+<script>
+  // セラピスト名の自動補完
+  createTherapistAutocomplete()
+  updateTherapistAutocompleteList(`<%= @therapist_autocomplete %>`)
+
+
+  // collectionを全て非表示にする
+  mikadoCoinFlows = document.getElementById("mikado_coin_flows")
+  Array.from(mikadoCoinFlows.children).forEach(function (mikado_coin_flow) {
+    if (mikado_coin_flow.children[0].children[1].value == "") {
+      // registerが""ならば、初期状態なので隠す。
+      mikado_coin_flow.classList.add("hidden")
+    }
+  })
+
+
+  // 入出庫追加の押下
+  function addFlow() {
+    therapistAutocomplete = document.getElementById("therapist-autocomplete")
+    mikadoCoinFlowCoinDefault = document.getElementById("mikado_coin_flow_coin_default")
+    mikadoCoinFlowDirectionDefault = document.getElementById("mikado_coin_flow_direction_default")
+    mikadoCoinFlowReasonDefault = document.getElementById("mikado_coin_flow_reason_default")
+    Array.from(mikadoCoinFlows.children).every(function (mikadoCoinFlow) {
+      if (mikadoCoinFlow.classList.contains("hidden")) {
+        mikadoCoinFlow.classList.remove("hidden")
+        mikadoCoinFlow.children[0].children[0].value = therapistAutocomplete.children[1].value
+        // registerは、セラピストの名前で埋める。
+        mikadoCoinFlow.children[0].children[1].value = therapistAutocomplete.children[0].value
+
+        mikadoCoinFlow.children[1].children[0].value = mikadoCoinFlowCoinDefault.value
+
+        mikadoCoinFlow.children[2].children[0].value = mikadoCoinFlowDirectionDefault.selectedOptions[0].value
+        mikadoCoinFlow.children[2].children[1].value = mikadoCoinFlowDirectionDefault.selectedOptions[0].text
+
+        mikadoCoinFlow.children[3].children[0].value = mikadoCoinFlowReasonDefault.value
+
+        return false
+      } else {
+        return true
+      }
+    })
+  }
+</script>

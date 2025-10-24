@@ -1,0 +1,353 @@
+<div class="mt-7 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="p-4 sm:p-7">
+    <div class="text-center">
+      <h1 class="block text-2xl font-bold text-gray-800 dark:text-white">応募者登録</h1>
+    </div>
+    <button type="button" class="py-3 px-4 inline-flex items-start gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-vertically-bulk-apply-modal">
+      一括適用
+    </button>
+
+    <div class="mt-5">
+      <%= form_with(model: @applicant, class: "space-y-8") do |f| %>
+        <%= render 'shared/error_messages', object: f.object %>
+
+        <div class="grid gap-y-4">
+          <div class="border-b border-gray-200 pb-4">
+            <div class="grid grid-cols-1 gap-y-4 sm:grid-cols-3 sm:gap-x-4">
+              <%= f.fields_for :applicant_detail do |applicant_detail| %>
+                <div>
+                  <label class="block text-sm mb-2 dark:text-white">応募日</label>
+                  <div class="relative">
+                    <%= applicant_detail.date_field :application_date, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm mb-2 dark:text-white">希望の所属店舗</label>
+                  <div class="relative">
+                    <%= applicant_detail.select :preferred_store_text, @preferred_store_list, {}, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                    <%= applicant_detail.hidden_field :preferred_store_id %>
+                    <%= f.hidden_field :applicant_store_id %>
+                  </div>
+                </div>
+                <div>
+                </div>
+                <div>
+                  <label class="block text-sm mb-2 dark:text-white">お名前</label>
+                  <div class="relative">
+                    <%= applicant_detail.text_field :name, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm mb-2 dark:text-white">電話番号</label>
+                  <div class="relative">
+                    <%= applicant_detail.telephone_field :tel, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm mb-2 dark:text-white">メールアドレス</label>
+                  <div class="relative">
+                    <%= applicant_detail.email_field :mail_address, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm mb-2 dark:text-white">年齢</label>
+                  <div class="relative">
+                    <%= applicant_detail.number_field :age, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm mb-2 dark:text-white">身長</label>
+                  <div class="relative">
+                    <%= applicant_detail.number_field :height, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm mb-2 dark:text-white">体重</label>
+                  <div class="relative">
+                    <%= applicant_detail.number_field :weight, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm mb-2 dark:text-white">最寄駅</label>
+                  <div class="relative">
+                    <%= applicant_detail.text_field :nearest_station, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm mb-2 dark:text-white">学歴</label>
+                  <div class="relative">
+                    <%= applicant_detail.text_field :education, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm mb-2 dark:text-white">職業</label>
+                  <div class="relative">
+                    <%= applicant_detail.text_field :occupation, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm mb-2 dark:text-white">出勤頻度</label>
+                  <div class="relative">
+                    <%= applicant_detail.text_field :work_frequency, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm mb-2 dark:text-white">経験人数</label>
+                  <div class="relative">
+                    <%= applicant_detail.text_field :experience_count, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                </div>
+                <div>
+                </div>
+                <div>
+                  <label class="block text-sm mb-2 dark:text-white">喫煙</label>
+                  <div class="relative">
+                    <%= applicant_detail.select :smoking, @smoking_options, {}, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm mb-2 dark:text-white">タトゥーの有無</label>
+                  <div class="relative">
+                    <%= applicant_detail.select :has_tattoo, @has_tattoo_options, {}, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm mb-2 dark:text-white">セラピスト経験・期間</label>
+                  <div class="relative">
+                    <%= applicant_detail.select :therapist_experience, @therapist_experience_options, {}, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm mb-2 dark:text-white">モザイク</label>
+                  <div class="relative">
+                    <%= applicant_detail.select :mosaic, @mosaic_options, {}, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                </div>
+                <div>
+                </div>
+                <div>
+                </div>
+                <div>
+                  <label class="block text-sm mb-2 dark:text-white">当店をどこで知りましたか？</label>
+                  <div class="relative">
+                    <%= applicant_detail.text_field :how_to_know, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                </div>
+                <div>
+                </div>
+                <div>
+                </div>
+                <div class="sm:col-span-3">
+                  <label class="block text-sm mb-2 dark:text-white">志望動機</label>
+                  <div class="relative">
+                    <%= applicant_detail.text_area :motivation, rows: 3, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                </div>
+                <div class="sm:col-span-3">
+                  <label class="block text-sm mb-2 dark:text-white">自己アピール</label>
+                  <div class="relative">
+                    <%= applicant_detail.text_area :self_pr, rows: 3, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                </div>
+                <div class="sm:col-span-3">
+                  <label class="block text-sm mb-2 dark:text-white">その他、ご質問等</label>
+                  <div class="relative">
+                    <%= applicant_detail.text_area :other_questions, rows: 3, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm mb-2 dark:text-white">写真</label>
+                  <div class="relative">
+                    写真は作成後に追加できます。
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+          <div class="flex justify-end gap-x-2">
+            <%= f.submit "登録", class: "py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 focus:text-white disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600", data: { confirm: "登録しますか？" } %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- 一括適用modalの定義。 -->
+<div id="hs-vertically-bulk-apply-modal" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+  <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+    <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+      <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+        <h3 class="font-bold text-gray-800 dark:text-white">
+          一括適用
+        </h3>
+        <input type="button" value="適用" onclick="return bulk_apply()" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-vertically-bulk-apply-modal"/>
+        <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay="#hs-vertically-bulk-apply-modal">
+          <span class="sr-only">Close</span>
+          <svg class="flex-shrink-0 size-8" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="overflow-x-hidden" style="height:70vh;">
+        <div class="flex flex-col gap-y-2 py-3 px-4 border-t dark:border-gray-700">
+          <div class="flex items-center gap-x-2">
+            <span>↓貼り付けて「適用」を押下してください。</span>
+            <button type="button" id="bulk-apply-rule-btn" class="ml-2 text-blue-600 underline text-xs" onclick="toggleAccordion('bulk-apply-rule', 'bulk-apply-rule-btn')">
+              例を見る
+            </button>
+          </div>
+          <div id="bulk-apply-rule" class="hidden transition-all duration-300">
+            <div class="mt-2 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-inner p-4">
+              <h2 class="text-base font-bold mb-2">例</h2>
+              <ul class="list-disc pl-5 text-sm text-gray-700 dark:text-gray-200">
+                <li>
+                  以下のように、【】で囲われたパラメータを適用します。
+                  <div class="ml-4 mt-1">
+                    【 メールアドレス 】○○@example.com<br>
+                    【 お名前 】 ○○<br>
+                    【 電話番号 】 0120828828<br>
+                    ...
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-start gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+          <textarea rows="20" id="bulk_apply_body" class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"></textarea>
+        </div>
+      </div>
+      <div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-neutral-700">
+        <button type="button" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700" data-hs-overlay="#hs-vertically-bulk-apply-modal">
+          閉じる
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%= javascript_include_tag('applicants') %>
+
+<script>
+  // 希望の所属店舗の選択を設定
+  const preferredStoreText = document.getElementById("applicant_applicant_detail_attributes_preferred_store_text");
+  const preferredStoreId = document.getElementById("applicant_applicant_detail_attributes_preferred_store_id");
+  const applicantStoreId = document.getElementById("applicant_applicant_store_id");
+
+  function syncpreferredStore() {
+    const selectedOption = preferredStoreText.options[preferredStoreText.selectedIndex];
+    preferredStoreId.value = selectedOption.dataset.id;
+    applicantStoreId.value = selectedOption.dataset.id;
+  }
+
+  // 初期値を反映
+  syncpreferredStore();
+
+  // 選択変更時も反映
+  preferredStoreText.addEventListener("change", syncpreferredStore);
+
+
+  // LINEテンプレートのルールを表示/非表示
+  function toggleAccordion(contentId, btnId) {
+    const el = document.getElementById(contentId);
+    const btn = document.getElementById(btnId);
+    el.classList.toggle('hidden');
+    if (el.classList.contains('hidden')) {
+      btn.textContent = '例を見る';
+    } else {
+      btn.textContent = '例を閉じる';
+    }
+  }
+
+
+  // 一括適用
+  async function bulk_apply() {
+    const bulkApplyBody = document.getElementById("bulk_apply_body").value;
+    var body = await getParamsFromBody(bulkApplyBody);
+    // self_prは、複数の値が入る可能性があるため定義して初期化しておく。
+    const self_pr = document.getElementById("applicant_applicant_detail_attributes_self_pr");
+    self_pr.value = '';
+    Object.keys(body).forEach(key => {
+      switch (key) {
+        case 'email-address':
+          document.getElementById("applicant_applicant_detail_attributes_mail_address").value = body[key];
+          break;
+        case 'text-name':
+          document.getElementById("applicant_applicant_detail_attributes_name").value = body[key];
+          break;
+        case 'tel-phone':
+          document.getElementById("applicant_applicant_detail_attributes_tel").value = body[key];
+          break;
+        case 'text-age':
+          document.getElementById("applicant_applicant_detail_attributes_age").value = body[key];
+          break;
+        case 'text-height':
+          document.getElementById("applicant_applicant_detail_attributes_height").value = body[key];
+          break;
+        case 'text-weight':
+          document.getElementById("applicant_applicant_detail_attributes_weight").value = body[key];
+          break;
+        case 'text-station':
+          document.getElementById("applicant_applicant_detail_attributes_nearest_station").value = body[key];
+          break;
+        case 'text-education':
+          document.getElementById("applicant_applicant_detail_attributes_education").value = body[key];
+          break;
+        case 'text-job':
+          document.getElementById("applicant_applicant_detail_attributes_occupation").value = body[key];
+          break;
+        case 'text-frequency':
+          document.getElementById("applicant_applicant_detail_attributes_work_frequency").value = body[key];
+          break;
+        case 'text-experience':
+          document.getElementById("applicant_applicant_detail_attributes_experience_count").value = body[key];
+          break;
+        case 'text-smoking':
+          document.getElementById("applicant_applicant_detail_attributes_smoking").value = body[key];
+          break;
+        case 'text-tattoo':
+          document.getElementById("applicant_applicant_detail_attributes_has_tattoo").value = body[key];
+          break;
+        case 'text-cast':
+          document.getElementById("applicant_applicant_detail_attributes_therapist_experience").value = body[key];
+          break;
+        case 'text-mosaic':
+          document.getElementById("applicant_applicant_detail_attributes_mosaic").value = body[key];
+          break;
+        case 'text-where':
+          document.getElementById("applicant_applicant_detail_attributes_how_to_know").value = body[key];
+          break;
+        case 'text-shop':
+          preferredStoreText.value = body[key];
+          syncpreferredStore();
+          break;
+        case 'textarea-cause':
+          document.getElementById("applicant_applicant_detail_attributes_motivation").value = body[key];
+          break;
+        case 'textarea-appeal':
+          document.getElementById("applicant_applicant_detail_attributes_self_pr").value = body[key] + self_pr.value;
+          break;
+        case 'textarea-section':
+          document.getElementById("applicant_applicant_detail_attributes_other_questions").value = body[key];
+          break;
+        // 店舗別
+        case 'text-percentage':
+          document.getElementById("applicant_applicant_detail_attributes_self_pr").value = self_pr.value + '\r\n\r\n【体脂肪率】\r\n'+ body[key]  + '%'
+          break;
+        case 'spec-type':
+          document.getElementById("applicant_applicant_detail_attributes_self_pr").value = self_pr.value + '\r\n\r\n【強み区分】\r\n' + body[key].join("、")
+          break;
+        case 'spec-exp':
+          document.getElementById("applicant_applicant_detail_attributes_self_pr").value = self_pr.value + '\r\n\r\n【強み詳細】\r\n' + body[key]
+          break;
+        case 'experience-exp':
+          document.getElementById("applicant_applicant_detail_attributes_self_pr").value = self_pr.value + '\r\n\r\n【女性経験】\r\n' + body[key]
+          break;
+        default:
+          break;
+      }
+    })
+  }
+</script>

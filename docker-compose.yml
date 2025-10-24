@@ -1,0 +1,66 @@
+version: "3.9"
+services:
+  proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/docker.sock:/tmp/docker.sock:ro
+      - ./docker/nginx/certs:/etc/nginx/certs
+      - ./docker/nginx/vhost.d:/etc/nginx/vhost.d
+      - ./docker/nginx/html:/usr/share/nginx/html
+    networks:
+      - webnet
+
+  letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: nginx-proxy-le
+    restart: always
+    volumes:
+      - ./docker/letsencrypt/docker.sock:/var/run/docker.sock:ro
+      - ./docker/letsencrypt/certs:/etc/nginx/certs
+      - ./docker/letsencrypt/vhost.d:/etc/nginx/vhost.d
+      - ./docker/letsencrypt/html:/usr/share/nginx/html
+    depends_on:
+      - proxy
+    networks:
+      - webnet
+
+  web1:
+    build:
+      context: ./first-class
+    networks:
+      - webnet
+    volumes:
+      - ./first-class:/first-class
+    command: bash -c "rm -f tmp/pids/server.pid && npm install && service cron start && bundle exec whenever --update-crontab && bundle exec rails tailwindcss:build && bundle exec wheneverize && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    environment:
+      TZ: Asia/Tokyo
+    ports:
+      - 3010:3000
+    stdin_open: true
+    tty: true
+    depends_on:
+      - mysql1
+
+  mysql1:
+    image: mysql:8.0
+    networks:
+      - webnet
+    volumes:
+      - ./docker/mysql/data:/var/lib/mysql
+      - ./docker/mysql/custom.cnf:/etc/mysql/conf.d/custom.cnf
+    environment:
+      - MYSQL_ROOT_PASSWORD=5swB2ANBrs
+      - MYSQL_DATABASE=first_db
+      - MYSQL_USER=first_user
+      - MYSQL_PASSWORD=HF7_AVgxL3
+    ports:
+      - 3316:3306
+    command: --default-authentication-plugin=mysql_native_password
+
+networks:
+  webnet:

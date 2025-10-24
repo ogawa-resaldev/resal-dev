@@ -1,0 +1,3 @@
+[mysqld]
+performance_schema = 0
+table_definition_cache = 400
