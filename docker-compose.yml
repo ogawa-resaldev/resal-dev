@@ -20,10 +20,10 @@ services:
     container_name: nginx-proxy-le
     restart: always
     volumes:
-      - ./docker/letsencrypt/docker.sock:/var/run/docker.sock:ro
-      - ./docker/letsencrypt/certs:/etc/nginx/certs
-      - ./docker/letsencrypt/vhost.d:/etc/nginx/vhost.d
-      - ./docker/letsencrypt/html:/usr/share/nginx/html
+      - ./docker/nginx/docker.sock:/var/run/docker.sock:ro
+      - ./docker/nginx/certs:/etc/nginx/certs
+      - ./docker/nginx/vhost.d:/etc/nginx/vhost.d
+      - ./docker/nginx/html:/usr/share/nginx/html
     depends_on:
       - proxy
     networks:
@@ -39,8 +39,11 @@ services:
     command: bash -c "rm -f tmp/pids/server.pid && npm install && service cron start && bundle exec whenever --update-crontab && bundle exec rails tailwindcss:build && bundle exec wheneverize && bundle exec rails s -p 3000 -b '0.0.0.0'"
     environment:
       TZ: Asia/Tokyo
-    ports:
-      - 3010:3000
+      VIRTUAL_HOST: first.resal-dev.com
+      LETSENCRYPT_HOST: first.resal-dev.com
+      LETSENCRYPT_EMAIL: resaldev20240421@gmail.com
+    expose:
+      - "3000"
     stdin_open: true
     tty: true
     depends_on:
