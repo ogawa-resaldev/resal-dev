@@ -32,9 +32,10 @@ class MiscellaneousExpensesRequestsController < ApplicationController
       end
 
       # 作成できたら、メールを送る。
-      sendCreateMail(session[:user_id], miscellaneous_expenses_request_params)
+      # sendCreateMail(session[:user_id], miscellaneous_expenses_request_params)
 
       # うまく作成できたら、清算一覧に飛ぶ。
+      flash[:notice] = "作成しました。"
       redirect_to("/cash_flows")
     rescue ActiveRecord::RecordInvalid => e
       flash[:miscellaneous_expenses_request_params] = miscellaneous_expenses_request_params
@@ -60,8 +61,9 @@ class MiscellaneousExpensesRequestsController < ApplicationController
     end
 
     # 承認されたら、メールとLINEを送る。
-    sendApproveMailAndLine(cash_flow)
+    # sendApproveMailAndLine(cash_flow)
 
+    flash[:notice] = "申請を承認しました。"
     redirect_to("/cash_flows")
   end
 
@@ -73,8 +75,9 @@ class MiscellaneousExpensesRequestsController < ApplicationController
     end
 
     # キャンセルされたら、メールとLINEを送る。
-    sendCancelMailAndLine(miscellaneous_expenses_request)
+    # sendCancelMailAndLine(miscellaneous_expenses_request)
 
+    flash[:notice] = "申請を却下しました。"
     redirect_to("/cash_flows")
   end
 
