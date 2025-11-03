@@ -37,10 +37,12 @@ class TransfersController < ApplicationController
             sendCreateTransferMailAndLine(@transfer)
           end
         end
+        flash[:notice] = "作成しました。"
         redirect_to("/transfers")
       end
     rescue ActiveRecord::RecordInvalid => e
       # エラーあったら、清算の一覧に飛ぶ。
+      flash[:alert] = "作成に失敗しました。"
       redirect_to "/cash_flows"
     end
   end
@@ -83,7 +85,8 @@ class TransfersController < ApplicationController
     # 振込の削除。
     transfer.delete
 
-    sendRejectTransferMailAndLine(transfer)
+    # sendRejectTransferMailAndLine(transfer)
+    flash[:notice] = "却下しました。"
     redirect_to(request.referer)
   end
 
@@ -108,6 +111,7 @@ class TransfersController < ApplicationController
     if params[:send_notifications_flag] then
       sendChangeTransferMailAndLine(transfer)
     end
+    flash[:notice] = "更新しました。"
     redirect_to(request.referer)
   end
 
@@ -119,6 +123,7 @@ class TransfersController < ApplicationController
     if params[:send_notifications_flag] then
       sendSetTransferMailAndLine(transfer)
     end
+    flash[:notice] = "振込を設定しました。"
     redirect_to(request.referer)
   end
 
@@ -130,6 +135,7 @@ class TransfersController < ApplicationController
     if params[:send_notifications_flag] then
       sendConfirmTransferMailAndLine(transfer)
     end
+    flash[:notice] = "振込を確認済みにしました。"
     redirect_to(request.referer)
   end
 

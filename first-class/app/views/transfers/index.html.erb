@@ -14,7 +14,7 @@
       </div>
     <% end %>
 
-    <div class="tabs">
+    <div class="tabs hidden">
       <div class="border-b border-gray-200 dark:border-neutral-700">
         <nav class="flex space-x-1 overflow-x-auto" aria-label="Tabs" role="tablist">
           <% role_tabs = @transfers.sort_by(&:store_group_id).group_by(&:store_group_id) %>
@@ -88,9 +88,9 @@
                       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
                         <p class="text-gray-800 dark:text-gray-400">
                           <% if transfer.direction == 1 %>
-                            セラピスト→店
+                            キャスト→店
                           <% else %>
-                            店→セラピスト
+                            店→キャスト
                           <% end %>
                         </p>
                       </td>
@@ -179,9 +179,9 @@
                           <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">発生日</th>
                           <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
                             <% if transfer.direction == 1 %>
-                              金額(セラピスト→店)
+                              金額(キャスト→店)
                             <% else %>
-                              金額(店→セラピスト)
+                              金額(店→キャスト)
                             <% end %>
                           </th>
                           <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">種別</th>
@@ -267,8 +267,8 @@
           <div class="overflow-x-hidden" style="height:70vh;">
             <div class="flex justify-start items-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
               <div class="p-4 overflow-y-auto">
-                <p <%= "hidden" if number_format(session[:user_role_id]) == "1" %>>
-                  セラピストに通知を送る：<%= check_box_tag :send_notifications_flag, true, false, {checked: true} %>
+                <p class="hidden">
+                  キャストに通知を送る：<%= check_box_tag :send_notifications_flag, true, false, {checked: false} %>
                 </p>
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-white">清算解除</h3>
                 <div class="flex flex-col">
@@ -283,7 +283,7 @@
                               </th>
                               <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">発生日</th>
                               <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
-                                金額(セラピスト→店)
+                                金額(キャスト→店)
                               </th>
                               <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">種別</th>
                             </tr>
@@ -352,7 +352,7 @@
                               </th>
                               <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">発生日</th>
                               <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
-                                金額(セラピスト→店)
+                                金額(キャスト→店)
                               </th>
                               <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">種別</th>
                             </tr>
@@ -439,8 +439,8 @@
           </div>
           <div class="flex justify-start gap-x-2 py-3 px-4 border-t dark:border-gray-700">
             <div class="p-4 overflow-y-auto">
-              <p <%= "hidden" if number_format(session[:user_role_id]) == "1" %>>
-                セラピストに通知を送る：<%= check_box_tag :send_notifications_flag, true, false, {checked: true} %>
+              <p class="hidden">
+                キャストに通知を送る：<%= check_box_tag :send_notifications_flag, true, false, {checked: false} %>
               </p>
               <%= form.hidden_field :id, name: "id" %>
               振込日
@@ -459,9 +459,9 @@
               <p class="text-gray-800 dark:text-gray-400">
                 向き先：
                 <% if transfer.direction == 1 %>
-                  セラピスト→店
+                  キャスト→店
                 <% else %>
-                  店→セラピスト
+                  店→キャスト
                 <% end %>
               </p>
             </div>
@@ -505,9 +505,9 @@
                               <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">発生日</th>
                               <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
                                 <% if transfer.direction == 1 %>
-                                  金額(セラピスト→店)
+                                  金額(キャスト→店)
                                 <% else %>
-                                  金額(店→セラピスト)
+                                  金額(店→キャスト)
                                 <% end %>
                               </th>
                               <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">種別</th>
@@ -590,8 +590,8 @@
           </div>
           <div class="flex justify-start gap-x-2 py-3 px-4 border-t dark:border-gray-700">
             <div class="p-4 overflow-y-auto">
-              <p <%= "hidden" if number_format(session[:user_role_id]) == "1" %>>
-                セラピストに通知を送る：<%= check_box_tag :send_notifications_flag, true, false, {checked: true} %>
+              <p class="hidden">
+                キャストに通知を送る：<%= check_box_tag :send_notifications_flag, true, false, {checked: false} %>
               </p>
               <h3 class="text-lg font-semibold text-gray-800 dark:text-white">振込情報</h3>
               <%= form.hidden_field :id, name: "id" %>
@@ -604,9 +604,9 @@
               <p class="text-gray-800 dark:text-gray-400">
                 向き先：
                 <% if transfer.direction == 1 %>
-                  セラピスト→店
+                  キャスト→店
                 <% else %>
-                  店→セラピスト
+                  店→キャスト
                 <% end %>
               </p>
             </div>
