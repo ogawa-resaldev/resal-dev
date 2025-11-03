@@ -19,19 +19,19 @@ every 15.minutes do
 end
 
 # 求人の自動通知
-every 1.hours do
-  rake 'applicant:notify'
-end
+# every 1.hours do
+#   rake 'applicant:notify'
+# end
 
 # 求人のリコンサイル
-every 1.hours do
-  rake 'applicant:reconcile'
-end
+# every 1.hours do
+#   rake 'applicant:reconcile'
+# end
 
 # 事前決済系の確認
-every 2.hours do
-  rake 'advanced_pay:check_paid_flag'
-end
+# every 2.hours do
+#   rake 'advanced_pay:check_paid_flag'
+# end
 
 # 毎日0:05にlogやbackupをローテーション
 every 1.days, at: '3:05 pm' do
@@ -39,9 +39,9 @@ every 1.days, at: '3:05 pm' do
 end
 
 # 毎日0:10にランキング反映日を確認して、反映日であればadd_rank_frame_image_urlsを更新する
-every 1.days, at: '3:10 pm' do
-  rake 'rank_frame:rank_frame'
-end
+# every 1.days, at: '3:10 pm' do
+#   rake 'rank_frame:rank_frame'
+# end
 
 # 毎朝8:05にbackupを生成
 every 1.days, at: '11:05 pm' do
