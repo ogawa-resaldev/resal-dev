@@ -1,7 +1,7 @@
 <div class="flex flex-col">
   <div class="py-3 px-4">
     <h2 class="text-xl dark:text-white">
-      セラピスト：<%= @therapist_name %>
+      キャスト：<%= @therapist_name %>
     </h2>
   </div>
   <div class="py-3 px-4">
@@ -49,7 +49,7 @@
                   </tr>
                   <tr>
                     <td class="px-6 py-4 whitespace-nowrap text-start text-sm text-gray-800 dark:text-gray-200">
-                      <strong>セラピスト報酬合計</strong>
+                      <strong>キャスト報酬合計</strong>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-end text-sm text-gray-800 dark:text-gray-200">
                       <%= number_format(@therapist_sale) %> (+<%= number_format(@expected_therapist_sale) %>) 円
@@ -77,22 +77,6 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-end text-sm text-gray-800 dark:text-gray-200">
                       <%= number_format(@reservation_repeat_count) %> (+<%= number_format(@expected_reservation_repeat_count) %>) 件
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-start text-sm text-gray-800 dark:text-gray-200">
-                      <strong>ポイント</strong>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-end text-sm text-gray-800 dark:text-gray-200">
-                      <%= number_format(@reservation_point) %> (+<%= number_format(@expected_reservation_point) %>) pt
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-start text-sm text-gray-800 dark:text-gray-200">
-                      <strong>応援ポイント</strong>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-end text-sm text-gray-800 dark:text-gray-200">
-                      <%= number_format(@reservation_support_point) %> (+<%= number_format(@expected_reservation_support_point) %>) pt
                     </td>
                   </tr>
                 </tbody>
@@ -151,8 +135,6 @@
                     <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">最終利用日</th>
                     <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">総額</th>
                     <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">売上の割合 (%)</th>
-                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">ポイント</th>
-                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">応援ポイント</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -172,12 +154,6 @@
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
                         <%= sprintf("%.1f", customer[:amount] * 100.0 / @sale) %>%
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
-                        <%= customer[:point] %>
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
-                        <%= customer[:support_point] %>
                       </td>
                     </tr>
                   <% end %>
@@ -199,8 +175,8 @@
   if (params.toString() == "") {
     let today = new Date()
     // sv-SEロケール(スウェーデン)はYYYY-MM-DD形式の日付文字列を戻す。
-    document.getElementById("target_period_from").value = (new Date(today.getFullYear(), today.getMonth() - 1, 26)).toLocaleDateString('sv-SE')
-    document.getElementById("target_period_to").value = (new Date(today.getFullYear(), today.getMonth(), 25)).toLocaleDateString('sv-SE')
+    document.getElementById("target_period_from").value = (new Date(today.getFullYear(), today.getMonth(), 1)).toLocaleDateString('sv-SE')
+    document.getElementById("target_period_to").value = (new Date(today.getFullYear(), today.getMonth() + 1, 0)).toLocaleDateString('sv-SE')
   }
   params.forEach((param,key)=>{
     if (key != "commit") {

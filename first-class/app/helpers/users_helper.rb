@@ -11,13 +11,13 @@ module UsersHelper
     @stores = Store.all
     @stores.each do |store|
       tmp_th = {}
-      uri = URI.parse(store.store_url + 'wp-json/wp/v2/casts?per_page=100')
+      uri = URI.parse(store.store_url + 'wp-json/wp/v2/users?per_page=100')
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = uri.scheme === "https"
       response = JSON.load(http.get(uri).body)
       response.each do |res|
         # システムに登録のないtherapistは、system_user_id = 0で登録される。
-        tmp_th[res["id"]] = {"system_user_id": 0, "therapist_name": res["title"]["rendered"], "autocomplete": ""}
+        tmp_th[res["id"]] = {"system_user_id": 0, "therapist_name": res["name"], "autocomplete": ""}
       end
       wp_therapist_list[store.id] = tmp_th
     end

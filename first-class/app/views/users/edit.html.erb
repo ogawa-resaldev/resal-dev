@@ -74,23 +74,6 @@
             <!-- Form Group -->
             <% if @user.user_role_id == 1 %>
               <%= f.fields_for :user_therapist_setting do |therapist_setting| %>
-                <% if session[:user_role_id] != 1 %>
-                  <div>
-                    <label class="block text-sm mb-2 dark:text-white">ログイン案内</label>
-                    <button type="button" class="py-1 px-2 items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-send-login-information-modal">
-                      ログイン案内の送信
-                    </button>
-                  </div>
-                  <div class="flex flex-col">
-                    <label class="block text-sm mb-2 dark:text-white">自動補完 (アルファベットの大文字と小文字は区別しませんが、カタカナとひらがなは別々に判定されます。)</label>
-                    <%= therapist_setting.text_field :auto_complete, class: "py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" %>
-                  </div>
-                <% else %>
-                  <div class="flex flex-col">
-                    <label class="block text-sm mb-2 dark:text-white">自動補完</label>
-                    <%= therapist_setting.object.auto_complete %>
-                  </div>
-                <% end %>
                 <div class="flex flex-col">
                   <label class="block text-sm mb-2 dark:text-white">メールアドレス</label>
                   <%= therapist_setting.text_field :mail_address, class: "py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" %>
@@ -99,80 +82,18 @@
                   <label class="block text-sm mb-2 dark:text-white">口座情報</label>
                   <%= therapist_setting.text_area :account_information, class: "py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600", rows: 5 %>
                 </div>
-                <div class="relative">
-                  <label class="block text-sm mb-2 dark:text-white">帝コイン残高</label>
-                  <p class="py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" readonly="readonly">
-                    <%= @user.user_therapist_setting.mikado_coin_balance %> コイン
-                  </p>
-                  <p id="mikado-coin-flow-accordion" class="text-gray-800 dark:text-gray-400">
-                    <div class="hs-accordion-group" data-hs-accordion-always-open="">
-                      <div class="hs-accordion" id="hs-basic-always-open-heading-one">
-                        <button type="button" class="hs-accordion-toggle hs-accordion-active:text-blue-600 py-3 inline-flex items-center gap-x-3 font-semibold text-start text-gray-800 hover:text-gray-500 rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:hs-accordion-active:text-blue-500 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:outline-none dark:focus:text-neutral-400" aria-controls="hs-basic-always-open-collapse-one">
-                          <svg class="hs-accordion-active:hidden block size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M5 12h14"></path>
-                            <path d="M12 5v14"></path>
-                          </svg>
-                          <svg class="hs-accordion-active:block hidden size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M5 12h14"></path>
-                          </svg>
-                          入出庫履歴
-                        </button>
-                        <div id="hs-basic-always-open-collapse-one" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-basic-always-open-heading-one">
-                          <div class="gap-x-2 py-3 px-4 border-t dark:border-gray-700">
-                            <div class="text-gray-800 dark:text-gray-400">
-                              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead class="bg-gray-50 dark:bg-gray-700">
-                                  <tr>
-                                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">日付</th>
-                                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">理由</th>
-                                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">入出庫</th>
-                                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">残高</th>
-                                  </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                  <% @mikado_coin_flows.each do |mikado_coin_flow| %>
-                                  <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200"><%= l mikado_coin_flow[:created_at], format: :date %></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200"><%= mikado_coin_flow[:reason] %></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200"><%= mikado_coin_flow[:coin] %></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200"><%= mikado_coin_flow[:balance] %></td>
-                                  </tr>
-                                  <% end %>
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </p>
-                </div>
 
                 <% if session[:user_role_id] != 1 %>
                   <div class="flex flex-col">
-                    <label class="block text-sm mb-2 dark:text-white">セラピスト登録</label>
+                    <label class="block text-sm mb-2 dark:text-white">キャスト情報</label>
                     <div class="table border-collapse table-auto w-full divide-y divide-gray-200 dark:divide-neutral-700">
                       <div class="table-header-group">
                         <div class="table-row">
-                          <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">ランク</div>
                           <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">新人</div>
-                          <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">セラピストバック率(%)</div>
+                          <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">キャストバック率(%)</div>
                         </div>
                       </div>
                       <div id="user_therapist_setting" class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
-                        <% if session[:user_role_id] == 3 && User.find(session[:user_id]).back_office_group.store_group_id != 1 %>
-                          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
-                            <% if therapist_setting.object.rank.present? %>
-                              <%= therapist_setting.object.rank.name %>
-                            <% else %>
-                              ランクなし
-                            <% end %>
-                          </div>
-                        <% else %>
-                          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
-                            <%= therapist_setting.collection_select :rank_id, Rank.all, :id, :name, {include_blank: 'ランクなし'}, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" %>
-                          </div>
-                        <% end %>
                         <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
                           <%= therapist_setting.check_box :new_face, {}, "1", "0" %>
                         </div>
@@ -181,17 +102,17 @@
                         </div>
                       </div>
                     </div>
-                    <label class="block text-sm mb-2 dark:text-white">word pressセラピストの紐付け</label>
+                    <label class="block text-sm mb-2 dark:text-white">ホームページキャストの紐付け</label>
                     <div class="table border-collapse table-auto w-full divide-y divide-gray-200 dark:divide-neutral-700">
                       <div class="table-header-group">
                         <div class="table-row">
-                          <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">店舗</div>
-                          <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">セラピスト</div>
-                          <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">通知グループID</div>
+                          <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500 hidden">店舗</div>
+                          <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">キャスト</div>
+                          <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500 hidden">通知グループID</div>
                         </div>
                       </div>
                       <div class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
-                        <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                        <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200 hidden">
                           <select id="store_default" class="py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" >
                             <% @store_selects.each do |store_select| %>
                               <option data-therapists="<%= store_select[2] %>" value=<%= store_select[1] %>>
@@ -209,11 +130,11 @@
                             <% end %>
                           </select>
                         </div>
-                        <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                        <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200 hidden">
                           <input type="text" id="notification_group_id_default" class="py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" autocomplete="off" />
                         </div>
                         <div class="inline-block align-middle">
-                          <%= link_to_add_association "word pressセラピストを追加", f, :user_therapists, class:'py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none', data: {association_insertion_node: '#user_therapists', association_insertion_method: :append} %>
+                          <%= link_to_add_association "word pressキャストを追加", f, :user_therapists, class:'py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none', data: {association_insertion_node: '#user_therapists', association_insertion_method: :append} %>
                         </div>
                       </div>
                       <div class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
@@ -338,10 +259,7 @@
   notificationGroupIdDefault = document.getElementById("notification_group_id_default")
   userTherapists.addEventListener('cocoon:after-insert', function(e){
     targetNodes = e.srcElement.children[e.srcElement.children.length - 1].children
-    targetNodes[0].children[0].value = storeDefault.selectedOptions[0].value
-    targetNodes[0].children[1].innerHTML = storeDefault.selectedOptions[0].text
-    targetNodes[1].children[0].value = storeTherapistDefault.selectedOptions[0].value
-    targetNodes[1].children[1].innerHTML = storeTherapistDefault.selectedOptions[0].text
-    targetNodes[2].children[0].value = notificationGroupIdDefault.value
+    targetNodes[0].children[0].value = storeTherapistDefault.selectedOptions[0].value
+    targetNodes[0].children[1].innerHTML = storeTherapistDefault.selectedOptions[0].text
   })
 </script>

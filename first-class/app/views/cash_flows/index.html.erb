@@ -48,7 +48,7 @@
                     <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
                       金額
                       <br />
-                      (セラピスト→店)
+                      (キャスト→店)
                     </th>
                     <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">種別</th>
                     <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">ユーザー</th>
@@ -110,10 +110,10 @@
                                 <button type="button" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-approve-cash-flow-modal-<%= cash_flow.id %>">
                                   承認
                                 </button>
-                                <%= button_to '却下', cancel_miscellaneous_expenses_request_path(cash_flow.id), { params: {id:cash_flow.id}, form: { onSubmit: "return check('次の雑費申請を却下しますか？：" + cash_flow.type_detail + "','')" }, class:"py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:pointer-events-none" } %>
+                                <%= button_to '却下', cancel_miscellaneous_expenses_request_path(cash_flow.id), { params: {id:cash_flow.id}, form: { onSubmit: "return check('次の雑費申請を却下しますか？：" + cash_flow.type_detail + "','')" }, class:"py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:pointer-events-none" } %>
                               </div>
                             <% else %>
-                              <%= button_to '削除', cash_flows_path + '/' + cash_flow[:id].to_s, { method: :delete, form: { onSubmit: "return check('次の雑費を削除しますか？：" + cash_flow.type_detail + "','')" }, class:"py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:pointer-events-none" } %>
+                              <%= button_to '削除', cash_flows_path + '/' + cash_flow[:id].to_s, { method: :delete, form: { onSubmit: "return check('次の雑費を削除しますか？：" + cash_flow.type_detail + "','')" }, class:"py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:pointer-events-none" } %>
                             <% end %>
                           <% end %>
                         <% end %>
@@ -174,7 +174,7 @@
                   発生日：<%= l cash_flow.occurrence_date, format: :date %>
                 </p>
                 <p class="text-gray-800 dark:text-gray-400">
-                  金額(セラピスト→店)：
+                  金額(キャスト→店)：
                   <% if cash_flow.direction == 1 %>
                     <%= number_format(cash_flow.amount) %>円
                   <% else %>
@@ -226,15 +226,15 @@
               <%= form.hidden_field :direction, id: "transfer_direction" %>
               <div class="flex justify-start gap-x-2 py-3 px-4 border-t dark:border-gray-700">
                 <div class="p-4 overflow-y-auto">
-                  <p <%= "hidden" if number_format(session[:user_role_id]) == "1" %>>
-                    セラピストに通知を送る：<%= check_box_tag :send_notifications_flag, true, false, {checked: true} %>
+                  <p class="hidden">
+                    キャストに通知を送る：<%= check_box_tag :send_notifications_flag, true, false, {checked: false} %>
                   </p>
                   <p id="transfer-user" class="text-gray-800 dark:text-gray-400">
                   </p>
-                  <p id="mail_address" class="text-gray-800 dark:text-gray-400">
+                  <p id="mail_address" class="text-gray-800 dark:text-gray-400 hidden">
                   </p>
                   <p id="account-information-accordion" class="text-gray-800 dark:text-gray-400">
-                    <div class="hs-accordion-group" data-hs-accordion-always-open="">
+                    <div class="hs-accordion-group hidden" data-hs-accordion-always-open="">
                       <div class="hs-accordion" id="hs-basic-always-open-heading-one">
                         <button type="button" class="hs-accordion-toggle hs-accordion-active:text-blue-600 py-3 inline-flex items-center gap-x-3 font-semibold text-start text-gray-800 hover:text-gray-500 rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:hs-accordion-active:text-blue-500 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:outline-none dark:focus:text-neutral-400" aria-controls="hs-basic-always-open-collapse-one">
                           <svg class="hs-accordion-active:hidden block size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -263,7 +263,7 @@
                     <thead class="bg-gray-50 dark:bg-gray-700">
                       <tr>
                         <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">発生日</th>
-                        <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">金額(セラピスト→店)</th>
+                        <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">金額(キャスト→店)</th>
                         <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">種別</th>
                       </tr>
                     </thead>
@@ -288,11 +288,11 @@
 <%= javascript_include_tag('therapist_autocomplete') %>
 
 <script>
-  // セラピスト名の自動補完
+  // キャスト名の自動補完
   createTherapistAutocomplete()
 
 
-  // 検索セラピストの再設定
+  // 検索キャストの再設定
   searchParams = new URLSearchParams(document.location.search)
   searchParams.forEach((param,key)=>{
     if (key != "commit") {
@@ -301,7 +301,7 @@
   })
 
 
-  // セラピスト名の自動補完リストを更新。補完のため、検索セラピストの再設定後に実行。
+  // キャスト名の自動補完リストを更新。補完のため、検索キャストの再設定後に実行。
   updateTherapistAutocompleteList(`<%= @therapist_autocomplete %>`)
 
 
@@ -331,7 +331,7 @@
           targetCashFlowIdList.push(cashFlow.children[0].children[0].value)
           if (targetUserId == "") {
             targetUserId = cashFlow.children[4].children[0].value
-            document.getElementById("transfer-user").innerHTML = "セラピスト：" + cashFlow.children[4].children[4].innerHTML
+            document.getElementById("transfer-user").innerHTML = "キャスト：" + cashFlow.children[4].children[4].innerHTML
             document.getElementById("mail_address").innerHTML = "メールアドレス：" + cashFlow.children[4].children[2].innerHTML
             document.getElementById("account_information").innerHTML = cashFlow.children[4].children[3].innerHTML.replaceAll("\n","<br />")
           } else if (targetUserId != cashFlow.children[4].children[0].value) {
@@ -364,21 +364,21 @@
     if (targetUserId == "") {
       errors.push("清算を選択してください。")
     }
-    if (document.getElementById("mail_address").innerHTML == "メールアドレス：") {
-      errors.push("確認メールを送信するため、メールアドレスを登録してください。(" + document.getElementById("transfer-user").innerHTML + ")")
-    }
+//    if (document.getElementById("mail_address").innerHTML == "メールアドレス：") {
+//      errors.push("確認メールを送信するため、メールアドレスを登録してください。(" + document.getElementById("transfer-user").innerHTML + ")")
+//    }
 
     if (sumAmount >= 0) {
       document.getElementById("transfer_sum_amount").value = sumAmount
       document.getElementById("transfer-sum-amount").innerHTML = "合計金額：" + sumAmount.toLocaleString() + "円"
       document.getElementById("transfer_direction").value = "1"
-      document.getElementById("transfer-direction").innerHTML = "方向：セラピスト→店"
+      document.getElementById("transfer-direction").innerHTML = "方向：キャスト→店"
     } else {
       sumAmount = sumAmount * (-1)
       document.getElementById("transfer_sum_amount").value = sumAmount
       document.getElementById("transfer-sum-amount").innerHTML = "合計金額：" + sumAmount.toLocaleString() + "円"
       document.getElementById("transfer_direction").value = "2"
-      document.getElementById("transfer-direction").innerHTML = "方向：店→セラピスト"
+      document.getElementById("transfer-direction").innerHTML = "方向：店→キャスト"
     }
 
     let modalErrors = document.getElementById("modal-errors")

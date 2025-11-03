@@ -11,7 +11,7 @@ class Reservation < ApplicationRecord
   belongs_to :reservation_status
   belongs_to :reservation_type
   belongs_to :store
-  validates :reservation_datetime, :name, :tel, :mail_address, :place, :reservation_courses,
+  validates :reservation_datetime, :name, :contact_method, :meeting_count, :call_count, :tel, :mail_address, :place, :reservation_courses,
     presence: true
   validates :adjustment_flag, :paid_flag,
     inclusion: [true, false]

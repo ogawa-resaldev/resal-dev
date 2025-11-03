@@ -7,14 +7,14 @@ class SalesController < ApplicationController
     @title = "売上一覧"
 
     @grouping_select = [
-      ["店舗グループ", "store_group"],
+      # ["店舗グループ", "store_group"],
       ["店舗", "store"],
-      ["セラピスト", "therapist"],
-      ["店舗×セラピスト", "store_therapist"]
+      ["キャスト", "therapist"]
+      # ["店舗×セラピスト", "store_therapist"]
     ]
 
     # グルーピングを設定。
-    grouping = "store_group"
+    grouping = "store"
     grouping = params[:grouping] if params[:grouping].present?
 
     # 期間の範囲を設定。(初期値は、今月1日〜今月末日)
@@ -73,24 +73,48 @@ class SalesController < ApplicationController
         sale[4] = number_format(sale[4]) + " (" + rate.to_s + "%)"
       end
       sales = sale_list.values
+    # when "store"
+    #   sale_columns = [["店舗","string"], ["総売上","amount"], ["キャストからの受け取り費用","amount"], ["予約売上","amount"], ["予約店舗分売上","amount"]]
+    #   # {店舗ID:[店舗名,総売上,キャストからの受け取り費用,予約売上,予約店舗分売上]}のリストを作成。
+    #   sale_list = {}
+    #   Store.all_by_user(session[:user_id]).each do |store|
+    #     sale_list[store.id] = [store.store_name, 0, 0, 0, 0]
+    #   end
+    #   # 求人売上
+    #   applicants = Applicant.all_by_user(session[:user_id])
+    #     .joins(:applicant_fees)
+    #     .where("? <= applicant_fees.receive_date", sale_datetime_from)
+    #     .where("applicant_fees.receive_date <= ?", sale_datetime_to)
+    #     .distinct
+    #   applicants.each do |applicant|
+    #     applicant.applicant_fees.each do |applicant_fee|
+    #       sale_list[applicant.applicant_detail.preferred_store_id][1] += applicant_fee.amount
+    #       sale_list[applicant.applicant_detail.preferred_store_id][2] += applicant_fee.amount
+    #     end
+    #   end
+    #   # 予約売上
+    #   reservations = Reservation.all_by_user(session[:user_id]).where(reservation_status_id: 4).where("? <= reservation_datetime", sale_datetime_from + " 0:00:00").where("reservation_datetime <= ?", sale_datetime_to + " 23:59:59")
+    #   reservations.each do |reservation|
+    #     sum_amount = reservation.reservation_courses.sum_amount + reservation.reservation_fees.sum_amount
+    #     sum_back_therapist_amount = reservation.reservation_courses.sum_back_therapist_amount + reservation.reservation_fees.sum_back_therapist_amount
+    #     sale_list[reservation.store.id][1] += sum_amount
+    #     sale_list[reservation.store.id][3] += sum_amount
+    #     sale_list[reservation.store.id][4] += sum_amount - sum_back_therapist_amount
+    #   end
+    #   sale_list.values.each do |sale|
+    #     rate = 0
+    #     if sale[3] != 0 then
+    #       rate = sprintf("%.1f", sale[4] * 100.0 / sale[3])
+    #     end
+    #     sale[4] = number_format(sale[4]) + " (" + rate.to_s + "%)"
+    #   end
+    #   sales = sale_list.values
     when "store"
-      sale_columns = [["店舗","string"], ["総売上","amount"], ["キャストからの受け取り費用","amount"], ["予約売上","amount"], ["予約店舗分売上","amount"]]
-      # {店舗ID:[店舗名,総売上,キャストからの受け取り費用,予約売上,予約店舗分売上]}のリストを作成。
+      sale_columns = [["店舗","string"], ["売上","amount"], ["店舗分売上","amount"]]
+      # {店舗ID:[店舗名,売上,店舗分売上]}のリストを作成。
       sale_list = {}
       Store.all_by_user(session[:user_id]).each do |store|
-        sale_list[store.id] = [store.store_name, 0, 0, 0, 0]
-      end
-      # 求人売上
-      applicants = Applicant.all_by_user(session[:user_id])
-        .joins(:applicant_fees)
-        .where("? <= applicant_fees.receive_date", sale_datetime_from)
-        .where("applicant_fees.receive_date <= ?", sale_datetime_to)
-        .distinct
-      applicants.each do |applicant|
-        applicant.applicant_fees.each do |applicant_fee|
-          sale_list[applicant.applicant_detail.preferred_store_id][1] += applicant_fee.amount
-          sale_list[applicant.applicant_detail.preferred_store_id][2] += applicant_fee.amount
-        end
+        sale_list[store.id] = [store.store_name, 0, 0]
       end
       # 予約売上
       reservations = Reservation.all_by_user(session[:user_id]).where(reservation_status_id: 4).where("? <= reservation_datetime", sale_datetime_from + " 0:00:00").where("reservation_datetime <= ?", sale_datetime_to + " 23:59:59")
@@ -98,19 +122,18 @@ class SalesController < ApplicationController
         sum_amount = reservation.reservation_courses.sum_amount + reservation.reservation_fees.sum_amount
         sum_back_therapist_amount = reservation.reservation_courses.sum_back_therapist_amount + reservation.reservation_fees.sum_back_therapist_amount
         sale_list[reservation.store.id][1] += sum_amount
-        sale_list[reservation.store.id][3] += sum_amount
-        sale_list[reservation.store.id][4] += sum_amount - sum_back_therapist_amount
+        sale_list[reservation.store.id][2] += sum_amount - sum_back_therapist_amount
       end
       sale_list.values.each do |sale|
         rate = 0
-        if sale[3] != 0 then
-          rate = sprintf("%.1f", sale[4] * 100.0 / sale[3])
+        if sale[1] != 0 then
+          rate = sprintf("%.1f", sale[2] * 100.0 / sale[1])
         end
-        sale[4] = number_format(sale[4]) + " (" + rate.to_s + "%)"
+        sale[2] = number_format(sale[2]) + " (" + rate.to_s + "%)"
       end
       sales = sale_list.values
     when "therapist"
-      sale_columns = [["セラピスト", "string"], ["予約数", "string"], ["リピート", "string"], ["売上", "amount"], ["店舗分売上", "amount"]]
+      sale_columns = [["キャスト", "string"], ["予約数", "string"], ["リピート", "string"], ["売上", "amount"], ["店舗分売上", "amount"]]
       # {ユーザーID:[ユーザー名,予約数,リピート,売上,店舗分売上]}のリストを作成。
       reservation_sales = {0=>["該当セラピストなし",0,0,0,0]}
       User.all_by_user(session[:user_id]).where(active_flag: 1, user_role_id: 1).each do |user|

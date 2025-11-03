@@ -23,8 +23,8 @@ class CashFlowsController < ApplicationController
     end
 
     @direction_select = [
-      ["セラピスト→店", 1],
-      ["店→セラピスト", 2]
+      ["キャスト→店", 1],
+      ["店→キャスト", 2]
     ]
   end
 
@@ -36,9 +36,10 @@ class CashFlowsController < ApplicationController
       end
 
       # 作成したら、メールを送信。
-      sendCreateMail(cash_flow)
+      # sendCreateMail(cash_flow)
 
       # うまく作成できたら、清算一覧に飛ぶ。
+      flash[:notice] = "作成しました。"
       redirect_to("/cash_flows")
     rescue ActiveRecord::RecordInvalid => e
       flash[:cash_flow_params] = cash_flow_params
@@ -83,9 +84,10 @@ class CashFlowsController < ApplicationController
     cash_flow.delete
 
     # 削除したら、メールを送信。
-    sendDeleteMail(cash_flow)
+    # sendDeleteMail(cash_flow)
 
     # うまく削除できたら、元のurlに戻る。
+    flash[:notice] = "削除しました。"
     redirect_to(request.referer)
   end
 

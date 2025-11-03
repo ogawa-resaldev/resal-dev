@@ -10,13 +10,13 @@ module V1
           @stores = Store.all
           @stores.each do |store|
             tmp_th = {}
-            uri = URI.parse(store.store_url + 'wp-json/wp/v2/casts?per_page=100')
+            uri = URI.parse(store.store_url + 'wp-json/wp/v2/users?per_page=100')
             http = Net::HTTP.new(uri.host, uri.port)
             http.use_ssl = uri.scheme === "https"
             response = JSON.load(http.get(uri).body)
             response.each do |res|
               tmp_th[res["id"]]={
-                name:res["title"]["rendered"]
+                name:res["name"]
               }
             end
             therapist[store.id]={

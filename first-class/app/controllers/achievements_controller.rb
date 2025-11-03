@@ -50,10 +50,9 @@ class AchievementsController < ApplicationController
     customer_list = []
 
     # 期間の範囲を設定。(初期値は、先月の26日〜今月の25日まで)
-    start_of_month = Time.current.beginning_of_month
-    target_period_from = start_of_month.yesterday.strftime("%Y-%m-26")
+    target_period_from = Time.current.beginning_of_month.strftime("%Y-%m-%d")
     target_period_from = params[:target_period_from] if params[:target_period_from].present?
-    target_period_to = start_of_month.strftime("%Y-%m-25")
+    target_period_to = Time.current.end_of_month.strftime("%Y-%m-%d")
     target_period_to = params[:target_period_to] if params[:target_period_to].present?
 
     # ユーザーセラピストの数だけ予約の検索をループさせる。

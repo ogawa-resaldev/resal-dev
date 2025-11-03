@@ -39,7 +39,7 @@ module ApplicationHelper
     @stores = Store.all
     @stores.each do |store|
       tmp_th = {}
-      uri = URI.parse(store.store_url + 'wp-json/wp/v2/casts?per_page=100')
+      uri = URI.parse(store.store_url + 'wp-json/wp/v2/users?per_page=100')
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = uri.scheme === "https"
       response = http.get(uri)
@@ -51,10 +51,12 @@ module ApplicationHelper
         i += 1
       end
       JSON.load(response.body).each do |res|
-        tmp_th[res["id"]]={
-          name:res["title"]["rendered"],
-          link:res["link"]
-        }
+        if !excludeCastIds.include?(res["id"])
+          tmp_th[res["id"]]={
+            name:res["name"],
+            link:res["link"]
+          }
+        end
       end
       therapist[store.id]={
         name:store.store_name,
@@ -73,7 +75,7 @@ module ApplicationHelper
     @stores = Store.all
     @stores.each do |store|
       tmp_th = {}
-      uri = URI.parse(store.store_url + 'wp-json/wp/v2/casts?per_page=100')
+      uri = URI.parse(store.store_url + 'wp-json/wp/v2/users?per_page=100')
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = uri.scheme === "https"
       response = http.get(uri)
@@ -85,10 +87,13 @@ module ApplicationHelper
         i += 1
       end
       JSON.load(response.body).each do |res|
-        tmp_th[res["id"]]={
-          name:res["title"]["rendered"],
-          link:res["link"]
-        }
+        if !excludeCastIds.include?(res["id"])
+          p res["id"].to_s + "," + res["name"] + "," + res["slug"]
+          tmp_th[res["id"]]={
+            name:res["name"],
+            link:res["link"]
+          }
+        end
       end
       therapist[store.id]={
         name:store.store_name,
@@ -141,5 +146,10 @@ module ApplicationHelper
     else
       return number
     end
+  end
+
+  # 取得したキャストの内、内勤などで除外するもののidリスト
+  private def excludeCastIds()
+    return [1, 2, 3, 64]
   end
 end

@@ -19,12 +19,12 @@ class UserTherapist < ApplicationRecord
     require 'net/http'
     require 'json'
     if !self.read_attribute(:store_id).blank? then
-      uri = URI.parse(Store.find(self.read_attribute(:store_id)).store_url + 'wp-json/wp/v2/casts/' + self.read_attribute(:therapist_id).to_s)
+      uri = URI.parse(Store.find(self.read_attribute(:store_id)).store_url + 'wp-json/wp/v2/users/' + self.read_attribute(:therapist_id).to_s)
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = uri.scheme === "https"
       response = JSON.load(http.get(uri).body)
-      if response.key?("title") then
-        return response["title"]["rendered"]
+      if response.key?("name") then
+        return response["name"]
       end
     end
     return ""

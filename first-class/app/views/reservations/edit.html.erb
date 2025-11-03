@@ -14,7 +14,7 @@
     <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500" id="tabs-with-underline-item-4" data-hs-tab="#tabs-with-underline-4" aria-controls="tabs-with-underline-4" role="tab">
       予約費用
     </button>
-    <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500" id="tabs-with-underline-item-5" data-hs-tab="#tabs-with-underline-5" aria-controls="tabs-with-underline-5" role="tab">
+    <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500 hidden" id="tabs-with-underline-item-5" data-hs-tab="#tabs-with-underline-5" aria-controls="tabs-with-underline-5" role="tab">
       ポイント
     </button>
     <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500" id="tabs-with-underline-item-6" data-hs-tab="#tabs-with-underline-6" aria-controls="tabs-with-underline-6" role="tab">
@@ -34,7 +34,7 @@
           <!-- Form -->
           <div class="grid gap-y-4">
             <!-- Form Group -->
-            <div>
+            <div class="hidden">
               <label class="block text-sm mb-2 dark:text-white">予約店舗</label>
               <div class="relative">
                 <%= f.select :store_id, @store_select, {}, {disabled: !@change_status_flag, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"} %>
@@ -50,12 +50,11 @@
             <!-- Form Group -->
             <div>
               <div class="flex justify-between items-center">
-                <label class="block text-sm mb-2 dark:text-white">セラピスト(希望)</label>
+                <label class="block text-sm mb-2 dark:text-white">キャスト</label>
               </div>
               <div class="relative">
                 <div class="flex items-center">
-                  <div id="therapist-autocomplete" class="w-1/2 md:w-1/4"></div>
-                  (<%= @reservation[:preferred_therapist] %>)
+                  <div id="therapist-autocomplete" class="w-1/2 md:w-1/4" style="<%= 'pointer-events: none; opacity: 0.6;' if !@change_status_flag %>"></div>
                 </div>
                 <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
                   <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
@@ -84,7 +83,7 @@
             <!-- End Form Group -->
 
             <!-- Form Group -->
-            <div>
+            <div class="hidden">
               <div class="flex justify-between items-center">
                 <label class="block text-sm mb-2 dark:text-white">予約タイプ</label>
               </div>
@@ -100,7 +99,7 @@
             <!-- End Form Group -->
 
             <!-- Form Group -->
-            <div>
+            <div class="hidden">
               <div class="flex justify-between items-center">
                 <label class="block text-sm mb-2 dark:text-white">調整済み</label>
               </div>
@@ -129,16 +128,48 @@
           <div class="grid gap-y-4">
             <!-- Form Group -->
             <div>
-              <label class="block text-sm mb-2 dark:text-white">予約名/電話番号<% if session[:user_role_id] != 1 %>/メールアドレス<% end %></label>
+              <label class="block text-sm mb-2 dark:text-white">予約名/対面回数/通話件数</label>
               <div class="relative">
                 <div class="flex items-center">
-                  <%= f.text_field :name, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  <%= f.text_field :name, disabled:!@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
                   /
-                  <%= f.text_field :tel, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
-                  <% if session[:user_role_id] != 1 %>
-                    /
-                    <%= f.text_field :mail_address, disabled: !@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
-                  <% end %>
+                  <%= f.number_field :meeting_count, disabled:!@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  /
+                  <%= f.number_field :call_count, disabled:!@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  <%= f.text_field :tel, value:"00011112222", class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600 hidden" %>
+                  <%= f.text_field :mail_address, value:"dummy@dummy.com", class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600 hidden" %>
+                </div>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <label class="block text-sm mb-2 dark:text-white">合流場所</label>
+              <div class="relative">
+                <div class="flex items-center">
+                  <%= f.text_field :place, disabled:!@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                </div>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <label class="block text-sm mb-2 dark:text-white">連絡手段</label>
+              <div class="relative">
+                <div class="flex items-center">
+                  <%= f.text_field :contact_method, disabled:!@change_status_flag, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
                 </div>
                 <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
                   <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
@@ -180,7 +211,7 @@
             <!-- End Form Group -->
 
             <!-- Form Group -->
-            <div>
+            <div class="hidden">
               <label class="block text-sm mb-2 dark:text-white">利用場所/住所</label>
               <div class="relative">
                 <div class="flex items-center">
@@ -198,7 +229,7 @@
             <!-- End Form Group -->
 
             <!-- Form Group -->
-            <div>
+            <div class="hidden">
               <label class="block text-sm mb-2 dark:text-white">SMS/オプション/NG<% if @reservation[:discount] != nil %>/割引<% end %></label>
               <div class="relative">
                 <div class="flex items-center">
@@ -222,7 +253,7 @@
             <!-- End Form Group -->
 
             <!-- Form Group -->
-            <div>
+            <div class="hidden">
               <label class="block text-sm mb-2 dark:text-white">その他</label>
               <div class="relative">
                 <div class="flex items-center">
@@ -348,10 +379,10 @@
         <div class="p-1.5 min-w-full inline-block align-middle">
           <div class="overflow-hidden">
             <% if @change_status_flag %>
-              <button type="button" id="calc-and-add-fees" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+              <button type="button" id="calc-and-add-fees" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none hidden">
                 自動計算
               </button>
-              (事前指名料金、深夜料金の計算。また、セラピストとコースを指定している場合は指名料と新人割も計算。)
+              <%# (事前指名料金、深夜料金の計算。また、セラピストとコースを指定している場合は指名料と新人割も計算。) %>
               <div class="table border-collapse table-auto w-full divide-y divide-gray-200 dark:divide-neutral-700">
                 <div class="table-header-group">
                   <div class="table-row">
@@ -512,8 +543,8 @@
                 <label class="block text-sm mb-2 dark:text-white">ステータス</label>
                 <%= f.select :reservation_status_id, @status_select, {}, {class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"} %>
                 <div id="cancel_reason_section" style="display: none;" class="mt-4">
-                  <label class="block text-sm mb-2 dark:text-white">キャンセル理由</label>
-                  <div class="space-y-2">
+                  <label class="block text-sm mb-2 dark:text-white hidden">キャンセル理由</label>
+                  <div class="space-y-2 hidden">
                     <div class="flex items-center">
                       <%= radio_button_tag :cancel_reason, "お客様都合", true, class: "w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" %>
                       <label class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">お客様都合</label>
@@ -532,11 +563,11 @@
                     </div>
                   </div>
                 </div>
-                <button type="button" id="update-messages" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+                <button type="button" id="update-messages" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none hidden">
                   メッセージ更新
                 </button>
-                (押下時、費用の自動計算とポイントの自動付与も行います。)
-                <div class="hs-accordion-group" data-hs-accordion-always-open="">
+                <%# (押下時、費用の自動計算とポイントの自動付与も行います。) %>
+                <div class="hs-accordion-group hidden" data-hs-accordion-always-open="">
                   <div class="hs-accordion" id="hs-basic-always-open-heading-one">
                     <button type="button" class="hs-accordion-toggle hs-accordion-active:text-blue-600 py-3 inline-flex items-center gap-x-3 font-semibold text-start text-gray-800 hover:text-gray-500 rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:hs-accordion-active:text-blue-500 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:outline-none dark:focus:text-neutral-400" aria-controls="hs-basic-always-open-collapse-one">
                       <svg class="hs-accordion-active:hidden block size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

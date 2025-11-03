@@ -11,11 +11,13 @@ class ReservationsController < ApplicationController
     if flash[:reservation_params] != nil then
       @reservation.assign_attributes(flash[:reservation_params])
       # 未確定、未支払いで作成。
-      @reservation.reservation_status_id = 1
+      @reservation.reservation_status_id = 2
       @reservation.paid_flag = false
       @reservation.valid?
     end
 
+    # キャストのスペースなしidリスト
+    @therapist_id_list = {}
     # 店舗ごとのセラピストのautocompleteリスト
     therapist_autocomplete_list = {}
     therapist = get_therapist_list
@@ -23,6 +25,7 @@ class ReservationsController < ApplicationController
       tmp_th = {}
       value[:therapist].each do |key2,value2|
         tmp_th[key2] = [key2,value2[:name],value2[:name]]
+        @therapist_id_list[value2[:name]] = key2
       end
       therapist_autocomplete_list[key] = tmp_th
     end
@@ -80,19 +83,8 @@ class ReservationsController < ApplicationController
     @reservation_cost_select = []
     # 初期選択状態についてのみ使用する値
     @reservation_cost_detail_initial_select = []
-    # ランク
-    @ranks = Rank.all
-    tmp_rank_details = [
-      ["フリー", {data:{amount:0,back_therapist_amount:0}}],
-      ["ランクなし", {data:{amount:1000,back_therapist_amount:1000}}]
-    ]
     @reservation_cost_initial_amount = 0
     @reservation_cost_initial_back_therapist_amount = 0
-    @ranks.each do |rank|
-      tmp_rank_details.push([rank.name, {data:{amount:rank.reservation_price,back_therapist_amount:rank.reservation_price}}])
-    end
-    @reservation_cost_select.push(["指名料", tmp_rank_details.to_json])
-    @reservation_cost_detail_initial_select = tmp_rank_details
     # 予約費用
     @reservation_costs = ReservationCost.all.includes(:reservation_cost_details)
     @reservation_costs.each do |reservation_cost|
@@ -100,11 +92,19 @@ class ReservationsController < ApplicationController
       reservation_cost.reservation_cost_details.each do |reservation_cost_detail|
         tmp_reservation_cost_details.push([reservation_cost_detail.cost_detail,{data:{amount:reservation_cost_detail.amount,back_therapist_amount:reservation_cost_detail.back_therapist_amount}}])
       end
+      # 最初の設定
+      if @reservation_cost_select == []
+        @reservation_cost_detail_initial_select = tmp_reservation_cost_details
+        @reservation_cost_initial_amount = tmp_reservation_cost_details[0][1][:data][:amount]
+        @reservation_cost_initial_back_therapist_amount = tmp_reservation_cost_details[0][1][:data][:back_therapist_amount]
+      end
       @reservation_cost_select.push([reservation_cost.cost_type, tmp_reservation_cost_details.to_json])
     end
 
     # コース料金のセレクトリスト
     @course_select = []
+    # コース詳細からコース、時間、料金を取得するリスト
+    @course_detail_list = {}
     # 初期選択状態についてのみ使用する値
     @course_detail_initial_select = []
     @course_initial_duration = 0
@@ -113,6 +113,7 @@ class ReservationsController < ApplicationController
     @courses.each_with_index do |course,i|
       tmp_course_details = []
       course.course_details.each do |course_detail|
+        @course_detail_list[course_detail.abbreviation] = {course:course.name,duration:course_detail.duration,amount:course_detail.price}
         tmp_course_details.push([course_detail.abbreviation,{data:{duration:course_detail.duration,amount:course_detail.price}}])
       end
       @course_select.push([course.name, tmp_course_details.to_json])
@@ -127,18 +128,24 @@ class ReservationsController < ApplicationController
   def create
     @reservation = Reservation.new(reservation_params)
 
-    # 未確定、未支払いで作成。
-    @reservation.reservation_status_id = 1
+    # 確定、未支払いで作成。
+    @reservation.reservation_status_id = 2
     @reservation.paid_flag = false
+    @reservation.reservation_type_id = 2
+    if @reservation.meeting_count + @reservation.call_count > 0
+      @reservation.reservation_type_id = 1
+    end
     begin
       ActiveRecord::Base.transaction do
         @reservation.save!
 
         # うまく作成できたら、一覧に飛ぶ。
+        flash[:notice] = "作成しました。"
         redirect_to("/reservations")
       end
     rescue ActiveRecord::RecordInvalid => e
       flash[:reservation_params] = reservation_params
+      flash[:alert] = "作成に失敗しました。"
       redirect_to "/reservations/new"
     end
   end
@@ -316,24 +323,29 @@ class ReservationsController < ApplicationController
     # 初期選択状態についてのみ使用する値
     @reservation_cost_detail_initial_select = []
     # ランク
-    @ranks = Rank.all
-    tmp_rank_details = [
-      ["フリー", {data:{amount:0,back_therapist_amount:0}}],
-      ["ランクなし", {data:{amount:1000,back_therapist_amount:1000}}]
-    ]
+    # @ranks = Rank.all
+    # tmp_rank_details = [
+    #   ["フリー", {data:{amount:0,back_therapist_amount:0}}],
+    #   ["ランクなし", {data:{amount:1000,back_therapist_amount:1000}}]
+    # ]
     @reservation_cost_initial_amount = 0
     @reservation_cost_initial_back_therapist_amount = 0
-    @ranks.each do |rank|
-      tmp_rank_details.push([rank.name, {data:{amount:rank.reservation_price,back_therapist_amount:rank.reservation_price}}])
-    end
-    @reservation_cost_select.push(["指名料", tmp_rank_details.to_json])
-    @reservation_cost_detail_initial_select = tmp_rank_details
+    # @ranks.each do |rank|
+    #   tmp_rank_details.push([rank.name, {data:{amount:rank.reservation_price,back_therapist_amount:rank.reservation_price}}])
+    # end
+    # @reservation_cost_select.push(["指名料", tmp_rank_details.to_json])
+    # @reservation_cost_detail_initial_select = tmp_rank_details
     # 予約費用
     @reservation_costs = ReservationCost.all.includes(:reservation_cost_details)
-    @reservation_costs.each do |reservation_cost|
+    @reservation_costs.each_with_index do |reservation_cost, i|
       tmp_reservation_cost_details = []
-      reservation_cost.reservation_cost_details.each do |reservation_cost_detail|
+      reservation_cost.reservation_cost_details.each_with_index do |reservation_cost_detail,j|
         tmp_reservation_cost_details.push([reservation_cost_detail.cost_detail,{data:{amount:reservation_cost_detail.amount,back_therapist_amount:reservation_cost_detail.back_therapist_amount}}])
+        if i == 0 && j == 0
+          @reservation_cost_detail_initial_select = tmp_reservation_cost_details
+          @reservation_cost_initial_amount = tmp_reservation_cost_details[0][1][:data][:amount]
+          @reservation_cost_initial_back_therapist_amount = tmp_reservation_cost_details[0][1][:data][:back_therapist_amount]
+        end
       end
       @reservation_cost_select.push([reservation_cost.cost_type, tmp_reservation_cost_details.to_json])
     end
@@ -398,11 +410,13 @@ class ReservationsController < ApplicationController
       end
 
       # うまく作成できたら、更新した状態を見るためにeditに戻る。
+      flash[:notice] = "更新しました。"
       redirect_to("/reservations/"+params[:id]+"/edit")
     rescue ActiveRecord::RecordInvalid => e
       flash[:reservation_params] = reservation_params
       # キャンセル/遂行済みにすると編集ができなくなってしまうので、ステータスIDをbeforeに戻すためにflashに入れて渡す。
       flash[:beforeReservationStatusId] = beforeReservationStatusId
+      flash[:alert] = "更新に失敗しました。"
       redirect_to("/reservations/"+params[:id]+"/edit")
     end
   end
@@ -411,6 +425,7 @@ class ReservationsController < ApplicationController
     @reservation = Reservation.find(params[:id])
     @reservation.update!(whiteboard: params[:whiteboard])
 
+    flash[:notice] = "更新しました。"
     redirect_to(request.referer)
   end
 
@@ -449,6 +464,7 @@ class ReservationsController < ApplicationController
       end
     end
 
+    flash[:notice] = "更新しました。"
     redirect_to(request.referer)
   end
 
@@ -477,6 +493,7 @@ class ReservationsController < ApplicationController
       end
     end
 
+    flash[:notice] = "更新しました。"
     redirect_to(request.referer)
   end
 
@@ -489,6 +506,9 @@ class ReservationsController < ApplicationController
       :preferred_therapist,
       :reservation_datetime,
       :name,
+      :contact_method,
+      :meeting_count,
+      :call_count,
       :tel,
       :mail_address,
       :place,

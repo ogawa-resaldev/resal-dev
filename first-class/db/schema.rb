@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_10_04_084251) do
+ActiveRecord::Schema[7.0].define(version: 2025_10_29_112259) do
   create_table "applicant_auto_notifications", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "store_group_id", null: false, comment: "店舗グループID"
     t.boolean "execute_flag", default: true, comment: "実行フラグ"
@@ -349,6 +349,9 @@ ActiveRecord::Schema[7.0].define(version: 2025_10_04_084251) do
     t.string "preferred_therapist", comment: "希望セラピスト"
     t.datetime "reservation_datetime", null: false, comment: "予約日時"
     t.string "name", null: false, comment: "予約名"
+    t.string "contact_method", comment: "連絡手段"
+    t.integer "meeting_count", default: 0, null: false, comment: "対面回数"
+    t.integer "call_count", default: 0, null: false, comment: "通話件数"
     t.string "tel", null: false, comment: "予約電話番号"
     t.string "mail_address", null: false, comment: "予約メールアドレス"
     t.string "place", null: false, comment: "利用場所"

@@ -43,9 +43,11 @@ class UsersController < ApplicationController
         end
       end
       # うまく作成できたら、ユーザー一覧に飛ぶ。
+      flash[:notice] = "作成しました。"
       redirect_to("/users")
     rescue ActiveRecord::RecordInvalid => e
       flash[:user_params] = user_params
+      flash[:alert] = "作成に失敗しました。"
       redirect_to("/users/new")
     end
   end
@@ -109,40 +111,41 @@ class UsersController < ApplicationController
           @store_therapist_initial_select = therapist_select_list[store[:id]]
         end
       end
+      p @user.user_therapists.sort_by(&:store_id)
     end
 
     # ユーザーがセラピストの場合、帝コインの入出庫履歴を表示。
     @mikado_coin_flows = []
-    if @user.user_role_id == 1 then
-      balance = 0
-      mikado_coin_flows = []
-      MikadoCoinFlow.where(user_id: @user.id).order(:created_at).each do |mikado_coin_flow|
-        coin = mikado_coin_flow.coin
-        if mikado_coin_flow.direction == 2 then
-          coin = coin * -1
-        end
-        balance = balance + coin
-        mikado_coin_flows.push({
-          created_at: mikado_coin_flow.created_at,
-          reason: mikado_coin_flow.reason,
-          coin: coin,
-          balance: balance
-        })
-      end
-      MikadoCoinFlowRequest.where(user_id: @user.id, status_id: 0).order(:created_at).each do |mikado_coin_flow_request|
-        coin = mikado_coin_flow_request.coin
-        if mikado_coin_flow_request.direction == 2 then
-          coin = coin * -1
-        end
-        mikado_coin_flows.push({
-          created_at: mikado_coin_flow_request.created_at,
-          reason: mikado_coin_flow_request.reason + " (申請中)",
-          coin: coin,
-          balance: "-"
-        })
-      end
-      @mikado_coin_flows = mikado_coin_flows.reverse
-    end
+    # if @user.user_role_id == 1 then
+    #   balance = 0
+    #   mikado_coin_flows = []
+    #   MikadoCoinFlow.where(user_id: @user.id).order(:created_at).each do |mikado_coin_flow|
+    #     coin = mikado_coin_flow.coin
+    #     if mikado_coin_flow.direction == 2 then
+    #       coin = coin * -1
+    #     end
+    #     balance = balance + coin
+    #     mikado_coin_flows.push({
+    #       created_at: mikado_coin_flow.created_at,
+    #       reason: mikado_coin_flow.reason,
+    #       coin: coin,
+    #       balance: balance
+    #     })
+    #   end
+    #   MikadoCoinFlowRequest.where(user_id: @user.id, status_id: 0).order(:created_at).each do |mikado_coin_flow_request|
+    #     coin = mikado_coin_flow_request.coin
+    #     if mikado_coin_flow_request.direction == 2 then
+    #       coin = coin * -1
+    #     end
+    #     mikado_coin_flows.push({
+    #       created_at: mikado_coin_flow_request.created_at,
+    #       reason: mikado_coin_flow_request.reason + " (申請中)",
+    #       coin: coin,
+    #       balance: "-"
+    #     })
+    #   end
+    #   @mikado_coin_flows = mikado_coin_flows.reverse
+    # end
   end
 
   def update
@@ -194,9 +197,11 @@ class UsersController < ApplicationController
         UsersHelper.update_wp_therapists
       end
       # うまく更新できたら、更新した状態を見るためにeditに戻る。
+      flash[:notice] = "更新しました。"
       redirect_to("/users/"+params[:id]+"/edit")
     rescue ActiveRecord::RecordInvalid => e
       flash[:user_params] = user_params
+      flash[:alert] = "更新に失敗しました。"
       redirect_to("/users/"+params[:id]+"/edit")
     end
   end
