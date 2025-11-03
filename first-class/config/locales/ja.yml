@@ -77,7 +77,7 @@ ja:
         experience_count: 経験人数
         smoking: 喫煙
         has_tattoo: タトゥーの有無
-        therapist_experience: セラピスト経験・期間
+        therapist_experience: キャスト経験・期間
         mosaic: モザイク
         how_to_know: 当店をどこで知りましたか？
         motivation: 志望動機
@@ -127,18 +127,19 @@ ja:
         point: ポイント
       reservation:
         name: 予約名
+        contact_method: 連絡手段
         tel: 電話番号
         mail_address: メールアドレス
-        place: 利用場所
+        place: 合流場所
         reservation_fees: 予約費用
         reservation_courses: 予約コース
       reservation_courses:
         duration: 所要時間(予約コース)
         amount: 料金(予約コース)
-        back_therapist_amount: セラピストバック料金(予約コース)
+        back_therapist_amount: キャストバック料金(予約コース)
       reservation_fees:
         amount: 料金(予約費用)
-        back_therapist_amount: セラピストバック料金(予約費用)
+        back_therapist_amount: キャストバック料金(予約費用)
       review:
         reservation_name: 予約名
         reservation_mail_address: 予約メールアドレス
@@ -167,7 +168,7 @@ ja:
         user: ユーザー
         rank: ランク
       user_therapists:
-        therapist_id: セラピスト
+        therapist_id: キャスト
     errors:
       messages:
         record_invalid: 'バリデーションに失敗しました: %{errors}'

@@ -175,8 +175,8 @@
   if (params.toString() == "") {
     let today = new Date()
     // sv-SEロケール(スウェーデン)はYYYY-MM-DD形式の日付文字列を戻す。
-    document.getElementById("target_period_from").value = (new Date(today.getFullYear(), today.getMonth() - 1, 26)).toLocaleDateString('sv-SE')
-    document.getElementById("target_period_to").value = (new Date(today.getFullYear(), today.getMonth(), 25)).toLocaleDateString('sv-SE')
+    document.getElementById("target_period_from").value = (new Date(today.getFullYear(), today.getMonth(), 1)).toLocaleDateString('sv-SE')
+    document.getElementById("target_period_to").value = (new Date(today.getFullYear(), today.getMonth() + 1, 0)).toLocaleDateString('sv-SE')
   }
   params.forEach((param,key)=>{
     if (key != "commit") {

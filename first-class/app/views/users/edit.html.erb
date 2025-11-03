@@ -90,7 +90,7 @@
                       <div class="table-header-group">
                         <div class="table-row">
                           <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">新人</div>
-                          <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">セラピストバック率(%)</div>
+                          <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">キャストバック率(%)</div>
                         </div>
                       </div>
                       <div id="user_therapist_setting" class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
@@ -134,7 +134,7 @@
                           <input type="text" id="notification_group_id_default" class="py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" autocomplete="off" />
                         </div>
                         <div class="inline-block align-middle">
-                          <%= link_to_add_association "word pressセラピストを追加", f, :user_therapists, class:'py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none', data: {association_insertion_node: '#user_therapists', association_insertion_method: :append} %>
+                          <%= link_to_add_association "word pressキャストを追加", f, :user_therapists, class:'py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none', data: {association_insertion_node: '#user_therapists', association_insertion_method: :append} %>
                         </div>
                       </div>
                       <div class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
