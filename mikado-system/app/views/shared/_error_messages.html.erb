@@ -1,0 +1,15 @@
+<% if object.errors.any? %>
+  <div class="bg-red-50 border border-red-200 text-sm text-red-800 rounded-lg p-4 dark:bg-red-800/10 dark:border-red-900 dark:text-red-500" role="alert">
+    <div class="flex">
+      <div class="ms-4">
+        <div class="mt-2 text-sm text-red-700 dark:text-red-400">
+          <ul class="list-disc space-y-1 ps-5">
+            <% object.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

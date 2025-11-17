@@ -1,0 +1,24 @@
+<div class="table-row nested-fields <%= "hidden" if not f.object.edit_flag(session[:user_id]) %>">
+  <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+    <%= f.hidden_field :store_id, class: "py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600", readonly: true %>
+    <div>
+      <%= f.object.store_name %>
+    </div>
+  </div>
+  <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+    <%= f.hidden_field :therapist_id, class: "py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600", readonly: true %>
+    <div>
+      <%= f.object.therapist_name %>
+    </div>
+  </div>
+  <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+    <% if f.object.id != nil %>
+      <%= f.text_field :notification_group_id, class: "py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600", autocomplete: "off" %>
+    <% else %>
+      <%= f.text_field :notification_group_id, value: "", class: "py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600", autocomplete: "off" %>
+    <% end %>
+  </div>
+  <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+    <%= link_to_remove_association "削除", f, class:"py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:pointer-events-none" %>
+  </div>
+</div>

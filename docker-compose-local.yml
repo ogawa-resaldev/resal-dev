@@ -2,7 +2,6 @@ services:
   proxy:
     image: jwilder/nginx-proxy
     container_name: nginx-proxy-local
-    restart: always
     ports:
       - "80:80"
     volumes:
@@ -44,8 +43,8 @@ services:
     networks:
       - webnet
     volumes:
-      - ./docker/mysql/data:/var/lib/mysql
-      - ./docker/mysql/custom.cnf:/etc/mysql/conf.d/custom.cnf
+      - ./docker/mysql1/data:/var/lib/mysql
+      - ./docker/mysql1/custom.cnf:/etc/mysql/conf.d/custom.cnf
     environment:
       - MYSQL_ROOT_PASSWORD=5swB2ANBrs
       - MYSQL_DATABASE=first_db
@@ -55,14 +54,66 @@ services:
       - "3316:3306"
     command: --default-authentication-plugin=mysql_native_password
 
-  phpmyadmin:
+  phpmyadmin1:
     image: phpmyadmin
     networks:
       - webnet
     environment:
-      PMA_HOST: "mysql1"
+      PMA_HOST: mysql1
     ports:
-      - 18080:80
+      - 18180:80
+
+  web2:
+    build:
+      context: ./mikado-system
+    container_name: mikado-web-local
+    networks:
+      - webnet
+      - fast
+    volumes:
+      - ./mikado-system:/mikado-system
+    command: >
+      bash -c "rm -f tmp/pids/server.pid &&
+               npm install &&
+               service cron start &&
+               bundle exec whenever --update-crontab &&
+               bundle exec rails tailwindcss:build &&
+               bundle exec rails s -p 3000 -b '0.0.0.0'"
+    environment:
+      TZ: Asia/Tokyo
+      VIRTUAL_HOST: mikado.localhost
+    expose:
+      - "3000"
+    stdin_open: true
+    tty: true
+    depends_on:
+      - mysql2
+
+  mysql2:
+    image: mysql:8.0
+    container_name: mysql2-local
+    networks:
+      - webnet
+    volumes:
+      - ./docker/mysql2/data:/var/lib/mysql
+      - ./docker/mysql2/custom.cnf:/etc/mysql/conf.d/custom.cnf
+    environment:
+      - MYSQL_ROOT_PASSWORD=5swB2ANBrs
+      - MYSQL_DATABASE=mikado_db
+      - MYSQL_USER=mikado_user
+      - MYSQL_PASSWORD=HF7_AVgxL3
+    ports:
+      - "3326:3306"
+    command: --default-authentication-plugin=mysql_native_password
+
+  phpmyadmin2:
+    image: phpmyadmin
+    networks:
+      - webnet
+    environment:
+      PMA_HOST: mysql2
+    ports:
+      - 18280:80
 
   fast-api:
     build:

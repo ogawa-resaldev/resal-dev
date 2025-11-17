@@ -3,9 +3,11 @@
 
 # mysqlのローカル
 # docker配下
-docker/mysql/data
+docker/mysql1/data
+docker/mysql2/data
 docker/certs
 docker/fast-api/app/line-messages
 
 # .env
 first-class/.env
+mikado-system/.env

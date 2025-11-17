@@ -1,0 +1,287 @@
+<div class="flex flex-col">
+  <%= render 'shared/error_messages', object: @new_pass_classification %>
+  <div class="overflow-x-auto">
+    <div class="p-1.5 min-w-full inline-block align-middle">
+      <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+        <div class="overflow-hidden">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">通過区分名</th>
+                <% if session[:user_role_id] == 2 %>
+                  <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">店舗グループ</th>
+                <% end %>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">編集</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+              <% @pass_classifications.each do |pass_classification| %>
+                <% if pass_classification.errors.present? %>
+                  <%= render 'shared/error_messages', object: pass_classification %>
+                <% end %>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                    <%= pass_classification.classification_name %>
+                  </td>
+                  <% if session[:user_role_id] == 2 %>
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                      <%= pass_classification.store_group.name %>
+                    </td>
+                  <% end %>
+                  <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                    <button type="button" name="update-button" data-status="2" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-update-modal-<%= pass_classification.id %>">
+                      編集
+                    </button>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <button type="button" name="create-button" data-status="2" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-create-modal">
+      追加
+    </button>
+  </div>
+</div>
+
+<!-- 編集modalの定義。 -->
+<% @pass_classifications.each do |pass_classification| %>
+  <%= form_with(model: pass_classification, url: "/pass_classifications/#{pass_classification.id}", method: :patch, local: true) do |form| %>
+    <div id="hs-update-modal-<%= pass_classification.id %>" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+      <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-[50rem] sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+        <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+          <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+            <%= form.submit "更新", onClick: "return check('更新しますか？','update-pass-classification-#{pass_classification.id}')", class: "py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none", id: "update-pass-classification-#{pass_classification.id}" %>
+            <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#hs-update-modal-<%= pass_classification.id %>">
+              <span class="sr-only">Close</span>
+              <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18"></path>
+                <path d="m6 6 12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="p-4">
+            <h3 class="mb-4">
+              通過区分名
+            </h3>
+            <%= form.text_field :classification_name, id:"pass_classification_classification_name_#{pass_classification.id}", class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+            <div class="border-b border-gray-200 dark:border-neutral-700 mt-4">
+              <nav class="flex space-x-1" aria-label="Tabs" role="tablist">
+                <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500 active" id="tabs-fee-item-<%= pass_classification.id %>" data-hs-tab="#tabs-fee-<%= pass_classification.id %>" aria-controls="tabs-fee-<%= pass_classification.id %>" role="tab">
+                  費用
+                </button>
+                <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500" id="tabs-mail-template-item-<%= pass_classification.id %>" data-hs-tab="#tabs-mail-template-<%= pass_classification.id %>" aria-controls="tabs-mail-template-<%= pass_classification.id %>" role="tab">
+                  メールテンプレート
+                </button>
+                <button type="button" onClick="update_preview('<%= pass_classification.id %>')" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500" id="tab-preview-mail-template-item-<%= pass_classification.id %>" data-hs-tab="#tab-preview-mail-template-<%= pass_classification.id %>" aria-controls="tab-preview-mail-template-<%= pass_classification.id %>" role="tab">
+                  メールプレビュー
+                </button>
+              </nav>
+            </div>
+            <div class="mt-3">
+              <div class="overflow-x-auto w-full" id="tabs-fee-<%= pass_classification.id %>" role="tabpanel" aria-labelledby="tabs-fee-<%= pass_classification.id %>">
+                <div class="flex min-w-[700px] divide-x divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+                  <div class="px-6 py-4 w-5/12 text-sm font-medium text-gray-800 dark:text-neutral-200">
+                    <input type="text" id="pass_classification_fee_name_<%= pass_classification.id %>" value="" class="w-full py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" placeholder="内容" />
+                  </div>
+                  <div class="px-6 py-4 w-5/12 text-sm font-medium text-gray-800 dark:text-neutral-200">
+                    <input type="text" id="pass_classification_fee_amount_<%= pass_classification.id %>" value="" class="w-full py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" placeholder="費用" />
+                  </div>
+                  <div class="px-6 py-4 w-5/12 text-sm font-medium text-gray-800 dark:text-neutral-200">
+                    <input type="text" id="pass_classification_fee_annotation_<%= pass_classification.id %>" value="" class="w-full py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" placeholder="注釈" />
+                  </div>
+                  <div class="flex items-center justify-center w-2/12">
+                    <div class="inline-block align-middle">
+                      <%= link_to_add_association "追加", form, :pass_classification_fees, id:"add_pass_classification_fee_button_#{pass_classification.id}", class:'py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none', data: {association_insertion_node: "#pass_classification_fees_#{pass_classification.id}", association_insertion_method: :append} %>
+                    </div>
+                  </div>
+                </div>
+                <div class="min-w-[700px]">
+                  <div id="pass_classification_fees_<%= pass_classification.id %>" class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+                    <%= form.fields_for :pass_classification_fees do |pass_classification_fee| %>
+                      <%= render 'pass_classification_fee_fields', f: pass_classification_fee %>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+              <div id="tabs-mail-template-<%= pass_classification.id %>" class="hidden" role="tabpanel" aria-labelledby="tabs-mail-template-<%= pass_classification.id %>">
+                <div class="flex flex-col gap-y-2 py-3 px-4 border-t dark:border-gray-700">
+                  <div class="flex items-center gap-x-2">
+                    <span>メールテンプレートのルール</span>
+                    <button type="button" id="mail-template-rule-btn-<%= pass_classification.id %>" class="ml-2 text-blue-600 underline text-xs" onclick="toggleAccordion('mail-template-rule-<%= pass_classification.id %>', 'mail-template-rule-btn-<%= pass_classification.id %>')">
+                      ルールを見る
+                    </button>
+                  </div>
+                  <div id="mail-template-rule-<%= pass_classification.id %>" class="hidden transition-all duration-300">
+                    <div class="mt-2 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-inner p-4">
+                      <h2 class="text-base font-bold mb-2">メールテンプレートのルール(本文のみ)</h2>
+                      <ul class="list-disc pl-5 text-sm text-gray-700 dark:text-gray-200">
+                        <li>
+                          HTMLタグが利用できます。
+                          <div class="ml-4 mt-1">
+                            例：<code>&lt;b&gt;重要&lt;/b&gt;</code> と入力すると <b>重要</b> のように太字になります。
+                          </div>
+                        </li>
+                        <li>以下の変数を利用できます。
+                          <ul class="list-disc pl-5 mt-1">
+                            <span class="bg-yellow-100 text-yellow-800 font-mono rounded px-1 py-0.5 text-sm">
+                              {{applicant_name}}
+                            </span>
+                            ・・・応募者名
+                            <br>
+                            <span class="bg-yellow-100 text-yellow-800 font-mono rounded px-1 py-0.5 text-sm">
+                              {{pass_classification_name}}
+                            </span>
+                            ・・・通過区分名
+                            <br>
+                            <span class="bg-yellow-100 text-yellow-800 font-mono rounded px-1 py-0.5 text-sm">
+                              {{pass_classification_fees}}
+                            </span>
+                            ・・・費用一覧を「内容　金額 注釈」の順で表示
+                            <br>
+                            <span class="bg-yellow-100 text-yellow-800 font-mono rounded px-1 py-0.5 text-sm">
+                              {{pass_classification_sum_amount}}
+                            </span>
+                            ・・・費用の合計
+                            <br>
+                            <span class="bg-yellow-100 text-yellow-800 font-mono rounded px-1 py-0.5 text-sm">
+                              {{sender_name}}
+                            </span>
+                            ・・・送信者名
+                          </ul>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex justify-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+                  <%= form.text_field :mail_template_subject, id: "pass_classification_mail_template_subject_" + pass_classification.id.to_s, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                </div>
+                <div class="flex justify-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+                  <%= form.text_area :mail_template_body, rows: 10, id: "pass_classification_mail_template_body_" + pass_classification.id.to_s, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                </div>
+              </div>
+              <div id="tab-preview-mail-template-<%= pass_classification.id %>" class="hidden" role="tabpanel" aria-labelledby="tab-preview-mail-template-<%= pass_classification.id %>">
+                <div class="w-full border p-4 bg-white" id="pass_classification_preview_mail_template_subject_<%= pass_classification.id %>"></div>
+                <div class="w-full border p-4 bg-white" id="pass_classification_preview_mail_template_body_<%= pass_classification.id %>"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+
+<!-- 追加modalの定義。 -->
+<%= form_with(model: @new_pass_classification, url: pass_classifications_path, local: true) do |form| %>
+  <div id="hs-create-modal" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-[50rem] sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+      <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+        <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+          <%= form.submit "追加", onClick: "return check('追加しますか？','create-pass-classification')", class: "py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none", id: "create-pass-classification" %>
+          <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#hs-create-modal">
+            <span class="sr-only">Close</span>
+            <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 6 6 18"></path>
+              <path d="m6 6 12 12"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="p-4">
+          <h3 class="mb-4">
+            通過区分
+          </h3>
+          <%= form.text_field :classification_name, id:"new_pass_classification_classification_name", class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+          <h3 class="mb-4">
+            店舗グループ
+          </h3>
+          <%= form.collection_select :store_group_id, StoreGroup.all_by_user(session[:user_id]), :id, :name, {}, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+          <%= form.hidden_field :mail_template_subject, class: "py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600", readonly: true %>
+          <%= form.hidden_field :mail_template_body, class: "py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600", readonly: true %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<script>
+// 費用追加時に、defaultを反映
+document.querySelectorAll('[id^="pass_classification_fees"]').forEach(function(node){
+  const passClassificationFeeName = document.getElementById("pass_classification_fee_name_" + node.id.split("_")[3])
+  const passClassificationFeeAmount = document.getElementById("pass_classification_fee_amount_" + node.id.split("_")[3])
+  const passClassificationFeeAnnotation = document.getElementById("pass_classification_fee_annotation_" + node.id.split("_")[3])
+  node.addEventListener('cocoon:after-insert', function(e){
+    targetNodes = e.srcElement.children[e.srcElement.children.length - 1].children
+    targetNodes[0].children[0].value = passClassificationFeeName.value
+    targetNodes[1].children[0].value = passClassificationFeeAmount.value
+    targetNodes[2].children[0].value = passClassificationFeeAnnotation.value
+  })
+})
+
+
+// メールテンプレートのプレビュータブを押下した際に、プレビューを更新
+async function update_preview(pass_classification_id) {
+  const subjectPreview = document.getElementById('pass_classification_preview_mail_template_subject_' + pass_classification_id);
+  const bodyPreview = document.getElementById('pass_classification_preview_mail_template_body_' + pass_classification_id);
+  const subject = document.getElementById('pass_classification_mail_template_subject_' + pass_classification_id).value;
+  const body = document.getElementById('pass_classification_mail_template_body_' + pass_classification_id).value;
+  mailParams = {}
+  mailParams.passClassificationName = document.getElementById('pass_classification_classification_name_' + pass_classification_id).value;
+  mailParams.applicantName = '○○'
+  mailParams.senderName = '<%= session[:user_name] %>'
+  passClassificationFees = []
+  Array.from(document.getElementById('pass_classification_fees_' + pass_classification_id).children).forEach(
+    function(passClassificationFee) {
+      if (passClassificationFee.tagName == "DIV") {
+          passClassificationFees.push(
+            {
+              fee_name: passClassificationFee.children[0].children[0].value,
+              amount: passClassificationFee.children[1].children[0].value,
+              annotation: passClassificationFee.children[2].children[0].value
+            }
+          )
+      }
+    }
+  )
+  mailParams.passClassificationFees = passClassificationFees
+
+  applicantMail = await createApplicantMail(subject, body, mailParams)
+
+  subjectPreview.innerHTML = applicantMail.subject
+  bodyPreview.innerHTML = applicantMail.body.replace(/\n/g, '<br>') // 改行を<br>に変換して表示(元の値は変更しない)
+}
+
+
+// メールテンプレートのルールを表示/非表示
+function toggleAccordion(contentId, btnId) {
+  const el = document.getElementById(contentId);
+  const btn = document.getElementById(btnId);
+  el.classList.toggle('hidden');
+  if (el.classList.contains('hidden')) {
+    btn.textContent = 'ルールを見る';
+  } else {
+    btn.textContent = 'ルールを閉じる';
+  }
+}
+
+
+async function createApplicantMail(subject, body, mailParams) {
+  return new Promise((resolve, reject) => {
+    axios
+    .post('/api/v1/mail_templates/create_applicant_mail', {
+      subject: subject,
+      body: body,
+      mailParams: mailParams
+    })
+    .then((res) => {
+      resolve(res.data);
+    })
+    .catch((e) => {
+      reject(e)
+    })
+  });
+}
+</script>

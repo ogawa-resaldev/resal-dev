@@ -1,0 +1,63 @@
+<div class="flex flex-col gap-y-2 py-3 px-4 border-t dark:border-gray-700">
+  <div class="flex items-center gap-x-2">
+    <span>メールテンプレートのルール</span>
+    <button type="button" id="mail-template-rule-btn-<%= id %>" class="ml-2 text-blue-600 underline text-xs" onclick="toggleAccordion('mail-template-rule-<%= id %>', 'mail-template-rule-btn-<%= id %>')">
+      ルールを見る
+    </button>
+  </div>
+  <div id="mail-template-rule-<%= id %>" class="hidden transition-all duration-300">
+    <div class="mt-2 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-inner p-4">
+      <h2 class="text-base font-bold mb-2"></h2>
+      <ul class="list-disc pl-5 text-sm text-gray-700 dark:text-gray-200">
+        <li>
+          HTMLタグが利用できます。
+          <div class="ml-4 mt-1">
+            例：<code>&lt;b&gt;重要&lt;/b&gt;</code> と入力すると <b>重要</b> のように太字になります。
+          </div>
+        </li>
+        <li>以下の変数を利用できます。
+          <ul class="list-disc pl-5 mt-1">
+            <span class="bg-yellow-100 text-yellow-800 font-mono rounded px-1 py-0.5 text-sm">
+              {{applicant_name}}
+            </span>
+            ・・・応募者名
+            <br>
+            <span class="bg-yellow-100 text-yellow-800 font-mono rounded px-1 py-0.5 text-sm">
+              {{interview_datetime}}
+            </span>
+            ・・・面接日時を「〇/〇 〇時〇分」と表示
+            <br>
+            <span class="bg-yellow-100 text-yellow-800 font-mono rounded px-1 py-0.5 text-sm">
+              {{interviewer_name}}
+            </span>
+            ・・・面接担当者名
+            <br>
+            <span class="bg-yellow-100 text-yellow-800 font-mono rounded px-1 py-0.5 text-sm">
+              {{professional_name}}
+            </span>
+            ・・・源氏名
+            <br>
+            <span class="bg-yellow-100 text-yellow-800 font-mono rounded px-1 py-0.5 text-sm">
+              {{sender_name}}
+            </span>
+            ・・・送信者名
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+// メールテンプレートのルールを表示/非表示
+function toggleAccordion(contentId, btnId) {
+  const el = document.getElementById(contentId);
+  const btn = document.getElementById(btnId);
+  el.classList.toggle('hidden');
+  if (el.classList.contains('hidden')) {
+    btn.textContent = 'ルールを見る';
+  } else {
+    btn.textContent = 'ルールを閉じる';
+  }
+}
+</script>

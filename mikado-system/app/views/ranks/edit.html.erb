@@ -1,0 +1,242 @@
+<div class="flex flex-col">
+  <div class="overflow-x-auto">
+    <div class="min-w-full align-middle">
+      <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+        <p id="ranking-accordion" class="text-gray-800 dark:text-gray-400">
+          <div class="hs-accordion-group" data-hs-accordion-always-open="">
+            <div class="hs-accordion" id="hs-basic-always-open-heading-one">
+              <button type="button" class="hs-accordion-toggle hs-accordion-active:text-blue-600 py-3 inline-flex items-center gap-x-3 font-semibold text-start text-gray-800 hover:text-gray-500 rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:hs-accordion-active:text-blue-500 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:outline-none dark:focus:text-neutral-400" aria-controls="hs-basic-always-open-collapse-one">
+                <svg class="hs-accordion-active:hidden block size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 12h14"></path>
+                  <path d="M12 5v14"></path>
+                </svg>
+                <svg class="hs-accordion-active:block hidden size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 12h14"></path>
+                </svg>
+                現在のランキング
+              </button>
+              <div id="hs-basic-always-open-collapse-one" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-basic-always-open-heading-one">
+                ※ランカーの画像を変更した場合、画像情報更新を押下してください。
+                <%= form_with(url: "/ranks/update_target_image_urls_for_present_ranks", method: :get, local: true) do |form| %>
+                  <%= form.submit "ランカー画像情報更新", onClick:"return check('ランカーの枠追加対象の画像情報を最新のものにしますか？','update-add-frame-target')", id:"update-add-frame-target", class: "py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" %>
+                <% end %>
+                <div class="gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+                  <div class="text-gray-800 dark:text-gray-400">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                          <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">セラピスト名</th>
+                          <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">ランク</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <% @present_ranks.each do |id, present_rank| %>
+                        <tr>
+                          <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200"><%= present_rank[:name] %></td>
+                          <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200"><%= present_rank[:rank] %></td>
+                        </tr>
+                        <% end %>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </p>
+      </div>
+      <% if session[:user_role_id] == 2 || (session[:user_role_id] == 3 && User.find(session[:user_id]).back_office_group.store_group_id == 1) %>
+        <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+          <div class="p-4 sm:p-7">
+            <div class="text-center">
+              <h1 class="block text-2xl font-bold text-gray-800 dark:text-white">ランキング反映予定</h1>
+            </div>
+            <% if UserRankReflectionDate.new.next_reflection_date == "" && UserRank.where(reflection_date: nil).count == 0 %>
+              反映予定のランキングはありません。
+            <% else %>
+              <h3 class="block text-xl font-bold text-gray-800 dark:text-white">
+                <% if UserRankReflectionDate.new.next_reflection_date == "" %>
+                  反映日が設定されていません。
+                <% else %>
+                  反映日
+                  <%= @user_rank_reflection_date.next_reflection_date %>
+                <% end %>
+                <button type="button" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-update-reflection-date-modal">
+                  反映日設定
+                </button>
+                <%= form_with(url: "/ranks/update_ranks_immediately", method: :get, local: true) do |form| %>
+                  <%= form.submit "即時反映", onClick:"return check('即時反映しますか？','update-ranks-immediately')", id:"update-ranks-immediately", class: "py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" %>
+                <% end %>
+                <br />
+              </h3>
+            <% end %>
+            <div class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+              <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                <button type="button" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-update-user-rank-modal">
+                  ランキング設定
+                </button>
+              </div>
+            </div>
+            <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                      <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">セラピスト</th>
+                      <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">ランク</th>
+                    </tr>
+                  </thead>
+                  <tbody id="user-rank-table" class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <% @user_ranks.each do |user_rank| %>
+                      <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-800 dark:text-gray-200">
+                          <p class="text-gray-800 dark:text-gray-400">
+                            <%= user_rank.user.name %>
+                          </p>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-800 dark:text-gray-200">
+                          <p class="text-gray-800 dark:text-gray-400">
+                            <%= user_rank.rank.name %>
+                          </p>
+                        </td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- 反映日変更modalの定義。 -->
+<%= form_with(model: @user_rank_reflection_date, url: "/ranks/update_reflection_date", local: true) do |form| %>
+  <div id="hs-update-reflection-date-modal" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+      <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+        <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+          <%= form.submit "反映日設定", onClick:"return check('反映日を設定しますか？','update-reflection-date')", id:"update-reflection-date", class: "py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" %>
+          <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#hs-update-reflection-date-modal">
+            <span class="sr-only">Close</span>
+            <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 6 6 18"></path>
+              <path d="m6 6 12 12"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="flex justify-start gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+          <div class="p-4 overflow-y-auto">
+            反映日
+            <%= form.date_field :reflection_date, name: "reflection_date", value:Time.now.strftime("%Y-%m-%d"), class:"py-3 px-4 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<!-- ランキング設定modalの定義。 -->
+<%= form_with(model: @user_rank_collection, url: "/ranks/update_user_rank", local: true) do |f| %>
+  <div id="hs-update-user-rank-modal" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+      <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+        <div id="modal-contents">
+          <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+            <%= f.submit "ランキング設定", onClick:"return check('ランキングを設定しますか？','update-user-rank')", id:"update-user-rank", class: "py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" %>
+            <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#hs-update-user-rank-modal">
+              <span class="sr-only">Close</span>
+              <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18"></path>
+                <path d="m6 6 12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="overflow-x-hidden" style="height:70vh;">
+            ※現在のランキングから変更のないランクも反映設定してください。
+            <div class="table border-collapse table-auto divide-y divide-gray-200 dark:divide-neutral-700">
+              <div class="table-header-group">
+                <div class="table-row">
+                  <div class="table-cell px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">セラピスト</div>
+                  <div class="table-cell px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">ランク</div>
+                  <div class="table-cell px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase dark:text-neutral-500"></div>
+                </div>
+              </div>
+              <div class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+                <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                  <div id="therapist-autocomplete"></div>
+                </div>
+                <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                  <select id="user_rank_rank_default" class="py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" >
+                    <% @rank_select.each do |rank| %>
+                      <option value=<%= rank[1] %>>
+                        <%= rank[0] %>
+                      </option>
+                    <% end %>
+                  </select>
+                </div>
+                <div class="align-middle">
+                  <button type="button" onClick="addRank()" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+                    ランキング追加
+                  </button>
+                </div>
+              </div>
+              <div id="user_ranks" class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+                <%= f.fields_for :user_ranks do |user_rank| %>
+                  <%= render 'user_rank_fields', f: user_rank %>
+                <% end %>
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-neutral-700">
+            <button type="button" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700" data-hs-overlay-close="#hs-update-user-rank-modal">
+              閉じる
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+<% end %>
+
+<%= javascript_include_tag('therapist_autocomplete') %>
+
+<script>
+  // セラピスト名の自動補完
+  createTherapistAutocomplete()
+  updateTherapistAutocompleteList(`<%= @therapist_autocomplete %>`)
+
+
+  // collectionを全て非表示にする
+  userRanks = document.getElementById("user_ranks")
+  Array.from(userRanks.children).forEach(function (user_rank) {
+    if (user_rank.children[0].children[1].value == "") {
+      // register_userが""ならば、初期状態なので隠す。
+      user_rank.classList.add("hidden")
+    }
+  })
+
+
+  // ランキング追加の押下
+  function addRank() {
+    therapistAutocomplete = document.getElementById("therapist-autocomplete")
+    userRankRankDefault = document.getElementById("user_rank_rank_default")
+    Array.from(userRanks.children).every(function (userRank) {
+      if (userRank.classList.contains("hidden")) {
+        userRank.classList.remove("hidden")
+        userRank.children[0].children[0].value = therapistAutocomplete.children[1].value
+        // registerは、セラピストの名前で埋める。
+        userRank.children[0].children[1].value = therapistAutocomplete.children[0].value
+
+        userRank.children[1].children[0][userRankRankDefault.selectedOptions[0].value].selected = true
+
+        return false
+      } else {
+        return true
+      }
+    })
+  }
+</script>

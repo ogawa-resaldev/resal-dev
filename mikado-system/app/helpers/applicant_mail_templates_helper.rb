@@ -1,0 +1,2 @@
+module ApplicantMailTemplatesHelper
+end

@@ -1,0 +1,179 @@
+<div class="flex flex-col">
+  <%= render 'shared/error_messages', object: @new_applicant_auto_notification %>
+  <div class="overflow-x-auto">
+    <div class="p-1.5 min-w-full inline-block align-middle">
+      <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+        <div class="overflow-hidden">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">有効/無効</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">対象日付</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">前日/当日/翌日</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">通知時刻</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">テンプレート</th>
+                <% if session[:user_role_id] == 2 %>
+                  <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">店舗グループ</th>
+                <% end %>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">編集</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+              <% @applicant_auto_notifications.each do |applicant_auto_notification| %>
+                <% if applicant_auto_notification.errors.present? %>
+                  <%= render 'shared/error_messages', object: applicant_auto_notification %>
+                <% end %>
+                <% if applicant_auto_notification.execute_flag %>
+                  <tr>
+                <% else %>
+                  <tr class="bg-gray-50" >
+                <% end %>
+                  <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                    <% if applicant_auto_notification.execute_flag %>
+                      有効
+                    <% else %>
+                      無効
+                    <% end %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                    <%= applicant_auto_notification.target_date_text %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                    <%= applicant_auto_notification.offset_days_text %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                    <%= applicant_auto_notification.notification_time_text %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                    <% if applicant_auto_notification.applicant_mail_template.present? %>
+                      メール：<%= applicant_auto_notification.applicant_mail_template.mail_template_name %>
+                    <% end %>
+                    <br>
+                    <% if applicant_auto_notification.applicant_line_template.present? %>
+                      LINE：<%= applicant_auto_notification.applicant_line_template.line_template_name %>
+                    <% end %>
+                  </td>
+                  <% if session[:user_role_id] == 2 %>
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                      <%= applicant_auto_notification.store_group.name %>
+                    </td>
+                  <% end %>
+                  <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                    <button type="button" name="update-button" data-status="2" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-update-modal-<%= applicant_auto_notification.id %>">
+                      編集
+                    </button>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <button type="button" name="create-button" data-status="2" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-create-modal">
+      追加
+    </button>
+  </div>
+</div>
+
+<!-- 編集modalの定義。 -->
+<% @applicant_auto_notifications.each do |applicant_auto_notification| %>
+  <%= form_with(model: applicant_auto_notification, url: "/applicant_auto_notifications/#{applicant_auto_notification.id}", method: :patch, local: true) do |form| %>
+    <div id="hs-update-modal-<%= applicant_auto_notification.id %>" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+      <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-[50rem] sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+        <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+          <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+            <%= form.submit "更新", onClick: "return check('更新しますか？','update-applicant-auto-notification-#{applicant_auto_notification.id}')", class: "py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none", id: "update-applicant-auto-notification-#{applicant_auto_notification.id}" %>
+            <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#hs-update-modal-<%= applicant_auto_notification.id %>">
+              <span class="sr-only">Close</span>
+              <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18"></path>
+                <path d="m6 6 12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="p-4">
+            <h3 class="mb-4">
+              有効/無効
+            </h3>
+            <label for="execute_flag_<%= applicant_auto_notification.id %>" class="relative inline-block w-11 h-6 cursor-pointer">
+              <%= form.check_box :execute_flag, id: "execute_flag_" + applicant_auto_notification.id.to_s, class: "peer sr-only" %>
+              <span class="absolute inset-0 bg-gray-200 rounded-full transition-colors duration-200 ease-in-out peer-checked:bg-blue-600 dark:bg-neutral-700 dark:peer-checked:bg-blue-500 peer-disabled:opacity-50 peer-disabled:pointer-events-none"></span>
+              <span class="absolute top-1/2 start-0.5 -translate-y-1/2 size-5 bg-white rounded-full shadow-xs transition-transform duration-200 ease-in-out peer-checked:translate-x-full dark:bg-neutral-400 dark:peer-checked:bg-white"></span>
+            </label>
+            <h3 class="mb-4">
+              対象日付
+            </h3>
+            <%= form.select :target_date, @target_date_select, {}, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+            <h3 class="mb-4">
+              前日/当日/翌日
+            </h3>
+            <%= form.select :offset_days, @offset_days_select, {}, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+            <h3 class="mb-4">
+              通知時間
+            </h3>
+            <%= form.select :notification_time, @notification_time_select, {}, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+            <h3 class="mb-4">
+              メールテンプレート
+            </h3>
+            <%= form.collection_select :applicant_mail_template_id, ApplicantMailTemplate.all_by_user(session[:user_id]), :id, :mail_template_name, {include_blank: true}, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+            <h3 class="mb-4">
+              LINEテンプレート
+            </h3>
+            <%= form.collection_select :applicant_line_template_id, ApplicantLineTemplate.all_by_user(session[:user_id]), :id, :line_template_name, {include_blank: true}, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+            <h3 class="mb-4">
+              店舗グループ
+            </h3>
+            <%= form.collection_select :store_group_id, StoreGroup.all_by_user(session[:user_id]), :id, :name, {}, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+
+<!-- 追加modalの定義。 -->
+<%= form_with(model: @new_applicant_auto_notification, url: applicant_auto_notifications_path, local: true) do |form| %>
+  <div id="hs-create-modal" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-[50rem] sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+      <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+        <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+          <%= form.submit "追加", onClick: "return check('追加しますか？','create-applicant-auto-notification')", class: "py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none", id: "create-applicant-auto-notification" %>
+          <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#hs-create-modal">
+            <span class="sr-only">Close</span>
+            <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 6 6 18"></path>
+              <path d="m6 6 12 12"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="p-4">
+          <h3 class="mb-4">
+            対象日付
+          </h3>
+          <%= form.select :target_date, @target_date_select, {}, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+          <h3 class="mb-4">
+            前日/当日/翌日
+          </h3>
+          <%= form.select :offset_days, @offset_days_select, {}, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+          <h3 class="mb-4">
+            通知時間
+          </h3>
+          <%= form.select :notification_time, @notification_time_select, {}, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+          <h3 class="mb-4">
+            メールテンプレート
+          </h3>
+          <%= form.collection_select :applicant_mail_template_id, ApplicantMailTemplate.all_by_user(session[:user_id]), :id, :mail_template_name, {include_blank: true}, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+          <h3 class="mb-4">
+            LINEテンプレート
+          </h3>
+          <%= form.collection_select :applicant_line_template_id, ApplicantLineTemplate.all_by_user(session[:user_id]), :id, :line_template_name, {include_blank: true}, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+          <h3 class="mb-4">
+            店舗グループ
+          </h3>
+          <%= form.collection_select :store_group_id, StoreGroup.all_by_user(session[:user_id]), :id, :name, {}, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

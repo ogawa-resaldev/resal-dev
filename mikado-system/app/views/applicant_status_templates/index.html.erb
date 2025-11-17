@@ -1,0 +1,455 @@
+<div class="flex flex-col">
+  <% storeGroups = StoreGroup.all_by_user(session[:user_id]) %>
+
+  <div class="overflow-x-auto">
+    <div class="tabs">
+      <div class="border-b border-gray-200 dark:border-neutral-700">
+        <nav class="flex space-x-1 overflow-x-auto" aria-label="Tabs" role="tablist">
+          <% storeGroups.each_with_index do |store_group, index| %>
+            <button type="button" onClick="openStoreGroupTab(<%= store_group.id %>)" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500 <%= 'active' if index == 0 %>" id="tabs-with-underline-item-<%= store_group.id %>" data-hs-tab="#tabs-with-underline-<%= store_group.id %>" aria-controls="tabs-with-underline-<%= store_group.id %>" role="tab">
+              <%= store_group.name %>
+            </button>
+          <% end %>
+        </nav>
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <% storeGroups.each_with_index do |store_group, index1| %>
+        <div id="tabs-with-underline-<%= store_group.id %>" class="<%= 'hidden' unless index1 == 0 %>" role="tabpanel" aria-labelledby="tabs-with-underline-item-<%= store_group.id %>">
+          <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+            <div class="overflow-x-auto">
+              <div class="tabs">
+                <div class="border-b border-gray-200 dark:border-neutral-700">
+                  <nav class="flex space-x-1 overflow-x-auto" aria-label="Tabs" role="tablist">
+                    <% @applicant_statuses.each_with_index do |applicant_status, index2| %>
+                      <button type="button" class="<%= 'active' if index2 == 0 %> hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500" id="tabs-with-underline-item-<%= store_group.id %>-<%= applicant_status.id %>" data-hs-tab="#tabs-with-underline-<%= store_group.id %>-<%= applicant_status.id %>" aria-controls="tabs-with-underline-<%= store_group.id %>-<%= applicant_status.id %>" role="tab">
+                        <%= applicant_status.status_name %>
+                        <% if @applicant_status_templates[store_group[:id]][applicant_status[:id]][:mail].count != 0 %>
+                          <span class="inline-flex items-center py-0.5 px-1.5 rounded-full text-xs font-medium bg-blue-600 text-white">
+                            <%= @applicant_status_templates[store_group[:id]][applicant_status[:id]][:mail].count %>
+                          </span>
+                        <% end %>
+                        <% if @applicant_status_templates[store_group[:id]][applicant_status[:id]][:line].count != 0 %>
+                          <span class="inline-flex items-center py-0.5 px-1.5 rounded-full text-xs font-medium bg-green-600 text-white">
+                            <%= @applicant_status_templates[store_group[:id]][applicant_status[:id]][:line].count %>
+                          </span>
+                        <% end %>
+                      </button>
+                    <% end %>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="mt-3">
+      <% storeGroups.each_with_index do |store_group, index1| %>
+        <% @applicant_statuses.each_with_index do |applicant_status, index2| %>
+          <div id="tabs-with-underline-<%= store_group.id %>-<%= applicant_status.id %>" class="<%= 'hidden' unless (index1 == 0 && index2 == 0) %>" role="tabpanel" aria-labelledby="tabs-with-underline-item-<%= store_group.id %>-<%= applicant_status.id %>">
+            <h3>メールテンプレート</h3>
+            <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                      <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">デフォルト選択</th>
+                      <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">テンプレート名</th>
+                      <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">詳細</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <% @applicant_status_templates[store_group.id][applicant_status.id][:mail].each do |applicant_status_mail_template| %>
+                    <tr>
+                      <td class="px-3 py-2 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-gray-200">
+                        <% if applicant_status_mail_template[:default_flag] %>
+                          デフォルト
+                        <% else %>
+                          <%= button_to 'デフォルトにする', applicant_status_templates_path + '/' + applicant_status_mail_template[:id].to_s + '/mail_default', { method: :post, form: { onSubmit: "return check('ステータス変更時のデフォルトにしますか？','')" }, class:"py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-600 disabled:opacity-50 disabled:pointer-events-none" } %>
+                        <% end %>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-gray-200">
+                        <%= applicant_status_mail_template[:name] %>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-gray-200">
+                        <button type="button" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-mail-template-modal-<%= applicant_status_mail_template[:id] %>">
+                          詳細
+                        </button>
+                      </td>
+                    </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <button type="button" onClick="update_add_mail_template_modal(<%= store_group.id %>, '<%= store_group.name %>', <%= applicant_status.id %>, '<%= applicant_status.status_name %>', '<%= @applicant_mail_templates[store_group.id].to_json %>')" name="add-mail-template-button" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#add-mail-template-modal">
+              メールテンプレートを追加
+            </button>
+            <br/>
+            <br/>
+            <h3>LINEテンプレート</h3>
+            <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                      <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">デフォルト選択</th>
+                      <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">テンプレート名</th>
+                      <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">詳細</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <% @applicant_status_templates[store_group.id][applicant_status.id][:line].each do |applicant_status_line_template| %>
+                    <tr>
+                      <td class="px-3 py-2 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-gray-200">
+                        <% if applicant_status_line_template[:default_flag] %>
+                          デフォルト
+                        <% else %>
+                          <%= button_to 'デフォルトにする', applicant_status_templates_path + '/' + applicant_status_line_template[:id].to_s + '/line_default', { method: :post, form: { onSubmit: "return check('ステータス変更時のデフォルトにしますか？','')" }, class:"py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-600 disabled:opacity-50 disabled:pointer-events-none" } %>
+                        <% end %>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-gray-200">
+                        <%= applicant_status_line_template[:name] %>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-gray-200">
+                        <button type="button" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-line-template-modal-<%= applicant_status_line_template[:id] %>">
+                          詳細
+                        </button>
+                      </td>
+                    </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <button type="button" onClick="update_add_line_template_modal(<%= store_group.id %>, '<%= store_group.name %>', <%= applicant_status.id %>, '<%= applicant_status.status_name %>', '<%= @applicant_line_templates[store_group.id].to_json %>')" name="add-line-template-button" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-green-600 text-white hover:bg-green-600 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#add-line-template-modal">
+              LINEテンプレートを追加
+            </button>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- メールテンプレート詳細modalの定義。 -->
+<% @applicant_status_mail_templates.each do |applicant_status_mail_template| %>
+<div id="hs-mail-template-modal-<%= applicant_status_mail_template.id %>" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+  <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+    <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+      <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+        <%= button_to '削除', applicant_status_templates_path + '/mail/' + applicant_status_mail_template.id.to_s, { method: :delete, form: { onSubmit: "return check('メールテンプレートの紐づけを削除しますか？','')" }, class:"py-2 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:pointer-events-none" } %>
+        <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay="#hs-mail-template-modal-<%= applicant_status_mail_template.id %>">
+          <span class="sr-only">Close</span>
+          <svg class="flex-shrink-0 size-8" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="overflow-x-hidden" style="height:70vh;">
+        <div class="justify-start gap-x-2 py-3 px-4">
+          <div class="overflow-y-auto">
+            <div>
+              <p class="text-gray-800 dark:text-gray-400">
+                店舗グループ：<%= applicant_status_mail_template.store_group.name %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                応募者ステータス：<%= applicant_status_mail_template.applicant_status.status_name %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                テンプレート名：<%= applicant_status_mail_template.applicant_mail_template.mail_template_name %>
+              </p>
+            </div>
+            <br />
+            <%= render "shared/mail_template_rules", id: applicant_status_mail_template.id %>
+            <h3>主題</h3>
+            <div>
+              <p class="text-gray-800 dark:text-gray-400">
+                <%= simple_format(applicant_status_mail_template.applicant_mail_template.mail_template_subject) %>
+              </p>
+            </div>
+            <br />
+            <h3>本文</h3>
+            <div>
+              <p class="text-gray-800 dark:text-gray-400">
+                <%= simple_format(applicant_status_mail_template.applicant_mail_template.mail_template_body) %>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-neutral-700">
+        <button type="button" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700" data-hs-overlay="#hs-mail-template-modal-<%= applicant_status_mail_template.id %>">
+          閉じる
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<% end %>
+
+<!-- メールテンプレート追加modalの定義。 -->
+<%= form_with(model: @applicant_status_mail_template, url: add_mail_template_applicant_status_templates_path, local: true) do |form| %>
+  <div id="add-mail-template-modal" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+      <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+        <div id="modal-contents">
+          <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+            <h3 class="font-bold text-gray-800 dark:text-white">
+              メールテンプレートを追加
+            </h3>
+            <%= form.submit "追加", onClick:"return check('メールテンプレートを追加しますか？','add-mail-template')", id:"add-mail-template", class: "py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" %>
+            <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#add-mail-template-modal">
+              <span class="sr-only">Close</span>
+              <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18"></path>
+                <path d="m6 6 12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="overflow-x-hidden" style="height:70vh;">
+            <div class="border-b border-gray-200 dark:border-neutral-700">
+              <%= form.hidden_field :store_group_id, id: "mail_template_store_group_id" %>
+              <%= form.hidden_field :applicant_status_id, id: "mail_template_applicant_status_id" %>
+              <%= form.hidden_field :applicant_mail_template_id, id: "mail_template_applicant_mail_template_id" %>
+              <div class="flex justify-start gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+                <div class="p-4 overflow-y-auto">
+                  <p id="mail_template_store_group_name"></p>
+                  <p id="mail_template_applicant_status_name"></p>
+                </div>
+              </div>
+              <div class="justify-start gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+                <p>
+                  <select id="applicant_mail_template_select" class="py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
+                  </select>
+                </p>
+                <label>件名：</label>
+                <div id="applicant_mail_template_subject">
+                </div>
+                <label class="mt-2 block">本文：</label>
+                <div id="applicant_mail_template_body">
+                </div>
+              </div>
+              <%= render "shared/mail_template_rules", id: "add" %>
+            </div>
+          </div>
+          <div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-neutral-700">
+            <button type="button" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700" data-hs-overlay-close="#add-mail-template-modal">
+              閉じる
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<!-- LINEテンプレート詳細modalの定義。 -->
+<% @applicant_status_line_templates.each do |applicant_status_line_template| %>
+<div id="hs-line-template-modal-<%= applicant_status_line_template.id %>" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+  <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+    <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+      <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+        <%= button_to '削除', applicant_status_templates_path + '/line/' + applicant_status_line_template.id.to_s, { method: :delete, form: { onSubmit: "return check('LINEテンプレートの紐づけを削除しますか？','')" }, class:"py-2 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:pointer-events-none" } %>
+        <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay="#hs-line-template-modal-<%= applicant_status_line_template.id %>">
+          <span class="sr-only">Close</span>
+          <svg class="flex-shrink-0 size-8" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="overflow-x-hidden" style="height:70vh;">
+        <div class="justify-start gap-x-2 py-3 px-4">
+          <div class="overflow-y-auto">
+            <div>
+              <p class="text-gray-800 dark:text-gray-400">
+                店舗グループ：<%= applicant_status_line_template.store_group.name %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                応募者ステータス：<%= applicant_status_line_template.applicant_status.status_name %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                テンプレート名：<%= applicant_status_line_template.applicant_line_template.line_template_name %>
+              </p>
+            </div>
+            <br />
+            <%= render "shared/line_template_rules", id: applicant_status_line_template.id %>
+            <h3>本文</h3>
+            <div>
+              <p class="text-gray-800 dark:text-gray-400">
+                <%= simple_format(applicant_status_line_template.applicant_line_template.line_template_body) %>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-neutral-700">
+        <button type="button" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700" data-hs-overlay="#hs-line-template-modal-<%= applicant_status_line_template.id %>">
+          閉じる
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<% end %>
+
+<!-- LINEテンプレート追加modalの定義。 -->
+<%= form_with(model: @applicant_status_line_template, url: add_line_template_applicant_status_templates_path, local: true) do |form| %>
+  <div id="add-line-template-modal" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+      <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+        <div id="modal-contents">
+          <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+            <h3 class="font-bold text-gray-800 dark:text-white">
+              LINEテンプレートを追加
+            </h3>
+            <%= form.submit "追加", onClick:"return check('LINEテンプレートを追加しますか？','add-line-template')", id:"add-line-template", class: "py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" %>
+            <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#add-line-template-modal">
+              <span class="sr-only">Close</span>
+              <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18"></path>
+                <path d="m6 6 12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="overflow-x-hidden" style="height:70vh;">
+            <div class="border-b border-gray-200 dark:border-neutral-700">
+              <%= form.hidden_field :store_group_id, id: "line_template_store_group_id" %>
+              <%= form.hidden_field :applicant_status_id, id: "line_template_applicant_status_id" %>
+              <%= form.hidden_field :applicant_line_template_id, id: "line_template_applicant_line_template_id" %>
+              <div class="flex justify-start gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+                <div class="p-4 overflow-y-auto">
+                  <p id="line_template_store_group_name"></p>
+                  <p id="line_template_applicant_status_name"></p>
+                </div>
+              </div>
+              <div class="justify-start gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+                <p>
+                  <select id="applicant_line_template_select" class="py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
+                  </select>
+                </p>
+                <div id="applicant_line_template_body">
+                </div>
+              </div>
+              <%= render "shared/line_template_rules", id: "add" %>
+            </div>
+          </div>
+          <div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-neutral-700">
+            <button type="button" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700" data-hs-overlay-close="#add-line-template-modal">
+              閉じる
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<script>
+  // 初期設定
+  // applicant_mail_template_selectのonchange設定
+  const applicantMailTemplateSelect = document.getElementById("applicant_mail_template_select")
+  const applicantLineTemplateSelect = document.getElementById("applicant_line_template_select")
+  const applicantMailTemplateId = document.getElementById("mail_template_applicant_mail_template_id")
+  const applicantMailTemplateSubject = document.getElementById("applicant_mail_template_subject")
+  const applicantMailTemplateBody = document.getElementById("applicant_mail_template_body")
+  const addMailTemplateButton = document.getElementById("add-mail-template");
+  addMailTemplateButton.disabled = true;
+  document.getElementById("applicant_mail_template_select").onchange = function(e) {
+    const option = e.target.selectedOptions[0];
+    if (!option || !option.dataset.subject) {
+      applicantMailTemplateId.value = '';
+      applicantMailTemplateSubject.innerHTML = '';
+      applicantMailTemplateBody.innerHTML = '';
+      addMailTemplateButton.disabled = true;
+      return;
+    }
+
+    applicantMailTemplateId.value = option.value;
+    applicantMailTemplateSubject.innerHTML = option.dataset.subject;
+    applicantMailTemplateBody.innerHTML = option.dataset.body.replace(/\r?\n/g, "<br>");
+    addMailTemplateButton.disabled = false;
+  }
+  // applicant_line_template_selectのonchange設定
+  const applicantLineTemplateId = document.getElementById("line_template_applicant_line_template_id")
+  const applicantLineTemplateBody = document.getElementById("applicant_line_template_body")
+  const addLineTemplateButton = document.getElementById("add-line-template");
+  addLineTemplateButton.disabled = true;
+  document.getElementById("applicant_line_template_select").onchange = function(e) {
+    const option = e.target.selectedOptions[0];
+    if (!option || !option.dataset.body) {
+      applicantLineTemplateId.value = '';
+      applicantLineTemplateBody.innerHTML = '';
+      addLineTemplateButton.disabled = true;
+      return;
+    }
+
+    applicantLineTemplateId.value = option.value;
+    applicantLineTemplateBody.innerHTML = option.dataset.body.replace(/\r?\n/g, "<br>");
+    addLineTemplateButton.disabled = false;
+  }
+
+
+  function openStoreGroupTab(store_group_id) {
+    document.getElementById("tabs-with-underline-" + store_group_id).getElementsByTagName("button")[0].click();
+  }
+
+
+  function update_add_mail_template_modal(store_group_id, store_group_name, applicant_mail_template_id, applicant_mail_template_name, applicant_status_templates) {
+    document.getElementById("mail_template_store_group_id").value = store_group_id;
+    document.getElementById("mail_template_applicant_status_id").value = applicant_mail_template_id;
+    document.getElementById("mail_template_store_group_name").innerHTML = "店舗グループ：" + store_group_name;
+    document.getElementById("mail_template_applicant_status_name").innerHTML = "ステータス：" + applicant_mail_template_name;
+
+    // 選択対象の設定。
+    applicantMailTemplateSubject.innerHTML = ""
+    applicantMailTemplateBody.innerHTML = ""
+    applicantMailTemplateSelect.innerHTML = "";
+    var op = document.createElement('option');
+    op.text = "選択"
+    op.value = ""
+    applicantMailTemplateSelect.appendChild(op);
+    mail_templates = JSON.parse(applicant_status_templates.replace(/\n/g, "\\n").replace(/\r/g, "\\r"));
+    if (mail_templates != null) {
+      mail_templates.forEach(mail_template => {
+        op = document.createElement('option');
+        op.text = mail_template.name
+        op.value = mail_template.id
+        op.dataset.subject = mail_template.subject
+        op.dataset.body = mail_template.body
+        applicantMailTemplateSelect.appendChild(op);
+      });
+    }
+  }
+
+
+  function update_add_line_template_modal(store_group_id, store_group_name, applicant_line_template_id, applicant_line_template_name, applicant_status_templates) {
+    document.getElementById("line_template_store_group_id").value = store_group_id;
+    document.getElementById("line_template_applicant_status_id").value = applicant_line_template_id;
+    document.getElementById("line_template_store_group_name").innerHTML = "店舗グループ：" + store_group_name;
+    document.getElementById("line_template_applicant_status_name").innerHTML = "ステータス：" + applicant_line_template_name;
+
+    // 選択対象の設定。
+    applicantLineTemplateBody.innerHTML = ""
+    applicantLineTemplateSelect.innerHTML = "";
+    var op = document.createElement('option');
+    op.text = "選択"
+    op.value = ""
+    applicantLineTemplateSelect.appendChild(op);
+    line_templates = JSON.parse(applicant_status_templates.replace(/\n/g, "\\n").replace(/\r/g, "\\r"));
+    if (line_templates != null) {
+      line_templates.forEach(line_template => {
+        op = document.createElement('option');
+        op.text = line_template.name
+        op.value = line_template.id
+        op.dataset.body = line_template.body
+        applicantLineTemplateSelect.appendChild(op);
+      });
+    }
+  }
+</script>

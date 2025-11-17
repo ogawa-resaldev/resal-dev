@@ -1,0 +1,408 @@
+<div class="flex flex-col">
+  <div class="-m-1.5 overflow-x-auto">
+    <!-- 絞り込み -->
+    <%= form_with(url: cash_flows_path, method: :get, local: true) do |form| %>
+      <div class="flex space-x-4 items-center">
+        <% if number_format(session[:user_role_id]) != "1" %>
+          <div id="therapist-autocomplete"></div>
+          <%= form.submit '適用', class: 'py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none' %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div class="tabs">
+      <div class="border-b border-gray-200 dark:border-neutral-700">
+        <nav class="flex space-x-1 overflow-x-auto" aria-label="Tabs" role="tablist">
+          <% role_tabs = @cash_flows.sort_by(&:store_group_id).group_by(&:store_group_id) %>
+          <% role_tabs.keys.each_with_index do |store_group_id, index| %>
+            <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500 <%= 'active' if index == 0 %>" id="tabs-with-underline-item-<%= store_group_id %>" data-hs-tab="#tabs-with-underline-<%= store_group_id %>" aria-controls="tabs-with-underline-<%= store_group_id %>" role="tab">
+              <%= @store_group_list[store_group_id] %>
+            </button>
+          <% end %>
+        </nav>
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <% role_tabs.each_with_index do |(store_group_id, cash_flows), index| %>
+        <div id="tabs-with-underline-<%= store_group_id %>" class="<%= 'hidden' unless index == 0 %>" role="tabpanel" aria-labelledby="tabs-with-underline-item-<%= store_group_id %>">
+          <button type="button" onClick="update_modal()" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-create-transfer-modal">
+            計上・振込作成
+          </button>
+          <div class="text-end">
+            <%= cash_flows.count %>件
+          </div>
+          <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
+                      <input id="hs-table-check-all-<%= store_group_id %>" name="hs-table-check-all" type="checkbox" class="border-gray-200 rounded text-blue-600 focus:ring-blue-500 dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                      発生日
+                      <br />
+                      支払い期限
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                      金額
+                      <br />
+                      (セラピスト→店)
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">種別</th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">ユーザー</th>
+                  </tr>
+                </thead>
+                <tbody id="cash-flow-table-<%= store_group_id %>" name="cash-flow-table" class="divide-y divide-gray-200 dark:divide-gray-700">
+                  <% cash_flows.each do |cash_flow| %>
+                  <% if cash_flow.highlite %>
+                    <tr class="bg-red-100" >
+                  <% else %>
+                    <tr>
+                  <% end %>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-start font-medium text-gray-800 dark:text-gray-200">
+                      <% if !cash_flow.is_request %>
+                        <%= check_box_tag 'cash-flow-check-box-'+(cash_flow.store_group_id).to_s, cash_flow.id, checked = false, :id => "cash_flow_#{cash_flow.id}", :class=>"border-gray-200 rounded text-blue-600 focus:ring-blue-500 dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" %>
+                      <% else %>
+                        申請中
+                      <% end %>
+                        <div class="text-red-700 dark:text-red-400">
+                          <%= cash_flow.note %>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-gray-200">
+                      <p class="text-gray-800 dark:text-gray-400">
+                        <%= l cash_flow.occurrence_date, format: :date %>
+                      </p>
+                      <% if !cash_flow.is_request %>
+                        <p class="text-gray-800 dark:text-gray-400">
+                          <%= l cash_flow.cash_flow_period, format: :date %>
+                        </p>
+                      <% else %>
+                        -
+                      <% end %>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-gray-200">
+                      <input type="hidden" value=<%= cash_flow.amount %> />
+                      <input type="hidden" value=<%= cash_flow.direction %> />
+                      <p class="text-gray-800 dark:text-gray-400">
+                        <% if cash_flow.direction == 1 %>
+                          <%= number_format(cash_flow.amount) %>円
+                        <% else %>
+                          <%= number_format(cash_flow.amount * (-1)) %>円
+                        <% end %>
+                      </p>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-gray-200">
+                      <p class="text-gray-800 dark:text-gray-400">
+                        <% if cash_flow.type == "予約" %>
+                          <a href="/reservations/<%= cash_flow.reservation_id %>/edit" target="_blanck" class="text-blue-600 underline decoration-white hover:opacity-80">
+                            <%= cash_flow.type %> (<%= cash_flow.type_detail %>様)
+                          </a>
+                        <% elsif cash_flow.type == "バー" %>
+                          <%= cash_flow.type %>
+                        <% elsif cash_flow.type == "雑費" %>
+                          <%= cash_flow.type %> (<%= cash_flow.type_detail %>)
+                          <% if session[:user_role_id] != 1 %>
+                            <% if cash_flow.is_request %>
+                              <div class="flex items-center justify-center" >
+                                <button type="button" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-approve-cash-flow-modal-<%= cash_flow.id %>">
+                                  承認
+                                </button>
+                                <%= button_to '却下', cancel_miscellaneous_expenses_request_path(cash_flow.id), { params: {id:cash_flow.id}, form: { onSubmit: "return check('次の雑費申請を却下しますか？：" + cash_flow.type_detail + "','')" }, class:"py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:pointer-events-none" } %>
+                              </div>
+                            <% else %>
+                              <%= button_to '削除', cash_flows_path + '/' + cash_flow[:id].to_s, { method: :delete, form: { onSubmit: "return check('次の雑費を削除しますか？：" + cash_flow.type_detail + "','')" }, class:"py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:pointer-events-none" } %>
+                            <% end %>
+                          <% end %>
+                        <% end %>
+                      </p>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-gray-200">
+                      <input type="hidden" value=<%= cash_flow.user_id %> />
+                      <input type="hidden" value=<%= cash_flow.store_group_id %> />
+                      <div class="hidden"><%= cash_flow.user.user_therapist_setting.mail_address %></div>
+                      <div class="hidden"><%= cash_flow.user.user_therapist_setting.account_information %></div>
+                      <p class="text-gray-800 dark:text-gray-400">
+                        <%= cash_flow.user.name %>
+                      </p>
+                    </td>
+                  </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<!-- 雑費承認modalの定義。 -->
+<% @cash_flows.each do |cash_flow| %>
+  <% if cash_flow.is_request %>
+    <%= form_with(model: cash_flow, url: approve_miscellaneous_expenses_request_path(cash_flow), method: :post, local: true) do |form| %>
+      <div id="hs-approve-cash-flow-modal-<%= cash_flow.id %>" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+        <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+          <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+            <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+              <h3 class="font-bold text-gray-800 dark:text-white">
+                雑費承認
+              </h3>
+              <%= form.submit "雑費承認", onClick:"return check('雑費を承認しますか？','approve-cash-flow-" + cash_flow.id.to_s + "')", id:"approve-cash-flow-" + cash_flow.id.to_s, class: "py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" %>
+              <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#hs-approve-cash-flow-modal-<%= cash_flow.id %>">
+                <span class="sr-only">Close</span>
+                <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 6 6 18"></path>
+                  <path d="m6 6 12 12"></path>
+                </svg>
+              </button>
+            </div>
+            <div class="flex justify-start gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+              <div class="p-4 overflow-y-auto">
+                <%= form.hidden_field :id, name: "id" %>
+                支払い期限
+                <%= form.date_field :cash_flow_period, name: "cash_flow_period", value:(cash_flow.occurrence_date + 60 * 60 * 24 * 14).strftime("%Y-%m-%d"), class:"py-3 px-4 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+              </div>
+            </div>
+            <div class="flex justify-start gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+              <div class="p-4 overflow-y-auto">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white">振込情報</h3>
+                <p class="text-gray-800 dark:text-gray-400">
+                  発生日：<%= l cash_flow.occurrence_date, format: :date %>
+                </p>
+                <p class="text-gray-800 dark:text-gray-400">
+                  金額(セラピスト→店)：
+                  <% if cash_flow.direction == 1 %>
+                    <%= number_format(cash_flow.amount) %>円
+                  <% else %>
+                    <%= number_format(cash_flow.amount * (-1)) %>円
+                  <% end %>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
+
+<!-- 計上modalの定義。 -->
+<%= form_with(model: @transfer, url: transfers_path, local: true) do |form| %>
+  <div id="hs-create-transfer-modal" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+      <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+        <div id="modal-errors" class="flex">
+          <div class="ms-4">
+            <div class="mt-2 text-sm text-red-700 dark:text-red-400">
+              <ul id="modal-error-messages" class="list-disc space-y-1 ps-5">
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div id="modal-contents">
+          <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+            <h3 class="font-bold text-gray-800 dark:text-white">
+              振込の作成
+            </h3>
+            <%= form.submit "作成", onClick:"return check('振込を作成しますか？','create-transfer')", id:"create-transfer", class: "py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" %>
+            <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#hs-create-transfer-modal">
+              <span class="sr-only">Close</span>
+              <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18"></path>
+                <path d="m6 6 12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="overflow-x-hidden" style="height:70vh;">
+            <div class="border-b border-gray-200 dark:border-neutral-700">
+              <%= form.hidden_field "cash_flow_ids", id: "cash_flow_ids" %>
+              <%= form.hidden_field :user_id, id: "transfer_user_id" %>
+              <%= form.hidden_field :store_group_id, id: "transfer_store_group_id" %>
+              <%= form.hidden_field :sum_amount, id: "transfer_sum_amount" %>
+              <%= form.hidden_field :direction, id: "transfer_direction" %>
+              <div class="flex justify-start gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+                <div class="p-4 overflow-y-auto">
+                  <p <%= "hidden" if number_format(session[:user_role_id]) == "1" %>>
+                    セラピストに通知を送る：<%= check_box_tag :send_notifications_flag, true, false, {checked: true} %>
+                  </p>
+                  <p id="transfer-user" class="text-gray-800 dark:text-gray-400">
+                  </p>
+                  <p id="mail_address" class="text-gray-800 dark:text-gray-400">
+                  </p>
+                  <p id="account-information-accordion" class="text-gray-800 dark:text-gray-400">
+                    <div class="hs-accordion-group" data-hs-accordion-always-open="">
+                      <div class="hs-accordion" id="hs-basic-always-open-heading-one">
+                        <button type="button" class="hs-accordion-toggle hs-accordion-active:text-blue-600 py-3 inline-flex items-center gap-x-3 font-semibold text-start text-gray-800 hover:text-gray-500 rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:hs-accordion-active:text-blue-500 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:outline-none dark:focus:text-neutral-400" aria-controls="hs-basic-always-open-collapse-one">
+                          <svg class="hs-accordion-active:hidden block size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14"></path>
+                            <path d="M12 5v14"></path>
+                          </svg>
+                          <svg class="hs-accordion-active:block hidden size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14"></path>
+                          </svg>
+                          口座情報
+                        </button>
+                        <div id="hs-basic-always-open-collapse-one" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-basic-always-open-heading-one">
+                          <div class="gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+                            <div id="account_information" class="text-gray-800 dark:text-gray-400">
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </p>
+                  <p id="transfer-sum-amount" class="text-gray-800 dark:text-gray-400">
+                  </p>
+                  <p id="transfer-direction" class="text-gray-800 dark:text-gray-400">
+                  </p>
+                  <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">発生日</th>
+                        <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">金額(セラピスト→店)</th>
+                        <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">種別</th>
+                      </tr>
+                    </thead>
+                    <tbody id="target-for-transfer-table" class="divide-y divide-gray-200 dark:divide-gray-700">
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-neutral-700">
+            <button type="button" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700" data-hs-overlay-close="#hs-create-transfer-modal">
+              閉じる
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<%= javascript_include_tag('therapist_autocomplete') %>
+
+<script>
+  // セラピスト名の自動補完
+  createTherapistAutocomplete()
+
+
+  // 検索セラピストの再設定
+  searchParams = new URLSearchParams(document.location.search)
+  searchParams.forEach((param,key)=>{
+    if (key != "commit") {
+      document.getElementById(key).value = searchParams.get(key)
+    }
+  })
+
+
+  // セラピスト名の自動補完リストを更新。補完のため、検索セラピストの再設定後に実行。
+  updateTherapistAutocompleteList(`<%= @therapist_autocomplete %>`)
+
+
+  checkAllList = document.getElementsByName("hs-table-check-all");
+  checkAllList.forEach((checkAll) => {
+    checkAll.addEventListener('change', function (event) {
+      storeGroupId = checkAll.id.replace("hs-table-check-all-", "")
+      document.getElementsByName("cash-flow-check-box-" + storeGroupId).forEach(function(checkBox){
+        checkBox.checked = checkAll.checked
+      })
+    })
+  })
+
+
+  function update_modal() {
+    let errors = []
+    let targetCashFlowIdList = []
+    let targetUserId = ""
+    let targetStoreGroupId = ""
+    let targetUser = ""
+    let sumAmount = 0
+    let targetForTransferTable = document.getElementById("target-for-transfer-table")
+    targetForTransferTable.innerHTML = ""
+    document.getElementsByName("cash-flow-table").forEach((cash_flow_table) => {
+      for(let cashFlow of Array.from(cash_flow_table.children)){
+        if (cashFlow.children[0].querySelector("input:checked[name^=cash-flow-check-box-]") != null) {
+          targetCashFlowIdList.push(cashFlow.children[0].children[0].value)
+          if (targetUserId == "") {
+            targetUserId = cashFlow.children[4].children[0].value
+            document.getElementById("transfer-user").innerHTML = "セラピスト：" + cashFlow.children[4].children[4].innerHTML
+            document.getElementById("mail_address").innerHTML = "メールアドレス：" + cashFlow.children[4].children[2].innerHTML
+            document.getElementById("account_information").innerHTML = cashFlow.children[4].children[3].innerHTML.replaceAll("\n","<br />")
+          } else if (targetUserId != cashFlow.children[4].children[0].value) {
+            errors.push("清算対象のユーザーが一人になっていません。")
+            break
+          }
+          if (targetStoreGroupId == "") {
+            targetStoreGroupId = cashFlow.children[4].children[1].value
+          } else if (targetStoreGroupId != cashFlow.children[4].children[1].value) {
+            errors.push("清算対象の店舗グループが一つになっていません。")
+            break
+          }
+          if (cashFlow.children[2].children[1].value == "1") {
+            sumAmount += Number(cashFlow.children[2].children[0].value)
+          } else {
+            sumAmount -= Number(cashFlow.children[2].children[0].value)
+          }
+
+          const tr = document.createElement("tr")
+          tr.appendChild(cashFlow.children[1].cloneNode(true))
+          const td = document.createElement("td")
+          td.appendChild(cashFlow.children[2].children[2].cloneNode(true))
+          tr.appendChild(td)
+          tr.appendChild(cashFlow.children[3].cloneNode(true))
+          targetForTransferTable.appendChild(tr)
+        }
+      }
+    })
+
+    if (targetUserId == "") {
+      errors.push("清算を選択してください。")
+    }
+    if (document.getElementById("mail_address").innerHTML == "メールアドレス：") {
+      errors.push("確認メールを送信するため、メールアドレスを登録してください。(" + document.getElementById("transfer-user").innerHTML + ")")
+    }
+
+    if (sumAmount >= 0) {
+      document.getElementById("transfer_sum_amount").value = sumAmount
+      document.getElementById("transfer-sum-amount").innerHTML = "合計金額：" + sumAmount.toLocaleString() + "円"
+      document.getElementById("transfer_direction").value = "1"
+      document.getElementById("transfer-direction").innerHTML = "方向：セラピスト→店"
+    } else {
+      sumAmount = sumAmount * (-1)
+      document.getElementById("transfer_sum_amount").value = sumAmount
+      document.getElementById("transfer-sum-amount").innerHTML = "合計金額：" + sumAmount.toLocaleString() + "円"
+      document.getElementById("transfer_direction").value = "2"
+      document.getElementById("transfer-direction").innerHTML = "方向：店→セラピスト"
+    }
+
+    let modalErrors = document.getElementById("modal-errors")
+    let modalErrorMessages = document.getElementById("modal-error-messages")
+    modalErrorMessages.innerHTML = ""
+    let modalContents = document.getElementById("modal-contents")
+    if (errors.length) {
+      // エラーがあったら、エラーを表示。
+      modalErrors.hidden = false
+      modalContents.hidden = true
+      let modalErrorMessages = document.getElementById("modal-error-messages")
+      errors.forEach((error) => {
+        var li = document.createElement('li');
+        li.innerHTML = error;
+        modalErrorMessages.appendChild(li);
+      })
+    } else {
+      // エラーなければ、送信用に各値をinput。
+      document.getElementById("cash_flow_ids").value = targetCashFlowIdList.join(",")
+      document.getElementById("transfer_user_id").value = targetUserId
+      document.getElementById("transfer_store_group_id").value = targetStoreGroupId
+
+      modalErrors.hidden = true
+      modalContents.hidden = false
+    }
+  }
+</script>

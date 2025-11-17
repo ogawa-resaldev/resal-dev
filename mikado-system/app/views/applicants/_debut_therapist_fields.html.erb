@@ -1,0 +1,35 @@
+<h3 class="font-bold text-gray-800 dark:text-white">
+  <%= check_box_tag :create_therapist_user_flag %>
+  セラピストユーザーを作成
+</h3>
+<div id="debut_therapist_params">
+  <h3 class="font-bold text-gray-800 dark:text-white">
+    紐付けするセラピスト
+  </h3>
+  <%= f.select :applicant_therapist_id, @unlinked_therapist_select, {}, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+  <h3 class="font-bold text-gray-800 dark:text-white">
+    ログインID
+  </h3>
+  <%= f.text_field :applicant_login_id, value: @initial_applicant_login_id ,class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+  <h3 class="font-bold text-gray-800 dark:text-white">
+    自動補完
+  </h3>
+  <%= f.text_field :applicant_auto_complete, value: @initial_applicant_auto_complete, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+</div>
+
+<script>
+  const createTherapistUserFlag = document.getElementById('create_therapist_user_flag')
+  const debutTherapistParams = document.getElementById('debut_therapist_params')
+  createTherapistUserFlag.addEventListener('change', function() {
+    if (createTherapistUserFlag.checked) {
+      debutTherapistParams.style.display = ''
+    } else {
+      debutTherapistParams.style.display = 'none'
+    }
+
+  })
+
+  document.addEventListener('DOMContentLoaded', function() {
+    debutTherapistParams.style.display = 'none'
+  });
+</script>

@@ -1,0 +1,228 @@
+<div class="flex flex-col">
+  <div class="py-3 px-4">
+    <h2 class="text-xl dark:text-white">
+      セラピスト：<%= @therapist_name %>
+    </h2>
+  </div>
+  <div class="py-3 px-4">
+    <!-- 絞り込み -->
+    <%= form_with url: {controller: 'achievements', action: 'show'}, method: 'GET', local: true do |form| %>
+      <div class="sm:flex items-center">
+        <div class="flex py-2 sm:px-2">
+          <div>
+            期間<br />
+            <%= form.date_field :target_period_from, class:"py-3 px-4 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+          </div>
+          <div>
+            <br />
+            &nbsp;〜&nbsp;
+          </div>
+          <div>
+            <br />
+            <%= form.date_field :target_period_to, class:"py-3 px-4 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+          </div>
+          <%= form.submit '適用', id: 'apply', class: 'py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none' %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="m-1.5">
+      <div class="p-1.5 max-w-full inline-block align-middle">
+        <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+          <div class="overflow-hidden container max-w-sm">
+            <h2 class="text-xl dark:text-white">
+              <strong>
+                予約売上
+              </strong>
+            </h2>
+            ※括弧内は、未遂行のものです
+            <div class="overflow-x-auto">
+              <table class="max-w-sm divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-start text-sm text-gray-800 dark:text-gray-200">
+                      <strong>売上</strong>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-end text-sm text-gray-800 dark:text-gray-200">
+                      <%= number_format(@sale) %> (+<%= number_format(@expected_sale) %>) 円
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-start text-sm text-gray-800 dark:text-gray-200">
+                      <strong>セラピスト報酬合計</strong>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-end text-sm text-gray-800 dark:text-gray-200">
+                      <%= number_format(@therapist_sale) %> (+<%= number_format(@expected_therapist_sale) %>) 円
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-start text-sm text-gray-800 dark:text-gray-200">
+                      <strong>総予約数</strong>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-end text-sm text-gray-800 dark:text-gray-200">
+                      <%= number_format(@reservation_count) %> (+<%= number_format(@expected_reservation_count) %>) 件
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-start text-sm text-gray-800 dark:text-gray-200">
+                      <strong>新規予約数</strong>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-end text-sm text-gray-800 dark:text-gray-200">
+                      <%= number_format(@reservation_count - @reservation_repeat_count) %> (+<%= number_format(@expected_reservation_count - @expected_reservation_repeat_count) %>) 件
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-start text-sm text-gray-800 dark:text-gray-200">
+                      <strong>リピート予約数</strong>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-end text-sm text-gray-800 dark:text-gray-200">
+                      <%= number_format(@reservation_repeat_count) %> (+<%= number_format(@expected_reservation_repeat_count) %>) 件
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-start text-sm text-gray-800 dark:text-gray-200">
+                      <strong>ポイント</strong>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-end text-sm text-gray-800 dark:text-gray-200">
+                      <%= number_format(@reservation_point) %> (+<%= number_format(@expected_reservation_point) %>) pt
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-start text-sm text-gray-800 dark:text-gray-200">
+                      <strong>応援ポイント</strong>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-end text-sm text-gray-800 dark:text-gray-200">
+                      <%= number_format(@reservation_support_point) %> (+<%= number_format(@expected_reservation_support_point) %>) pt
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <h2 class="text-xl dark:text-white">
+              <strong>
+                お客様情報
+              </strong>
+            </h2>
+            <div class="overflow-x-auto">
+              <table class="max-w-sm divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-start text-sm text-gray-800 dark:text-gray-200">
+                      <strong>お客様数</strong>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-end text-sm text-gray-800 dark:text-gray-200">
+                      <%= @new_customer_count + @repeater_count %> 人
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-start text-sm text-gray-800 dark:text-gray-200">
+                      <strong>新規 (リピーターになった方)</strong>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-end text-sm text-gray-800 dark:text-gray-200">
+                      <%= @new_customer_count %> (<%= @new_to_repeater_count %>) 人
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-start text-sm text-gray-800 dark:text-gray-200">
+                      <strong>リピーター</strong>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-end text-sm text-gray-800 dark:text-gray-200">
+                      <%= @repeater_count %> 人
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <% if @customer_list.size != 0 %>
+      <div class="overflow-x-auto">
+        <div class="p-1.5 min-w-full inline-block align-middle">
+          <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+            <div class="overflow-hidden">
+              <table class="max-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">お客様名</th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">利用回数</th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">最終利用日</th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">総額</th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">売上の割合 (%)</th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">ポイント</th>
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">応援ポイント</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                  <% @customer_list.each do |customer| %>
+                    <tr>
+                      <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                        <%= customer[:name] %>様
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                        <%= customer[:count] %>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                        <%= customer[:last_date] %>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                        <%= number_format(customer[:amount]) %>円
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                        <%= sprintf("%.1f", customer[:amount] * 100.0 / @sale) %>%
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                        <%= customer[:point] %>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                        <%= customer[:support_point] %>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+  </div>
+</div>
+
+<script>
+  // 検索パラメータの再設定
+  const params = new URLSearchParams(document.location.search)
+  // もし検索パラメータがなかったら、最初のアクセスなので期間を設定。
+  if (params.toString() == "") {
+    let today = new Date()
+    // sv-SEロケール(スウェーデン)はYYYY-MM-DD形式の日付文字列を戻す。
+    document.getElementById("target_period_from").value = (new Date(today.getFullYear(), today.getMonth() - 1, 26)).toLocaleDateString('sv-SE')
+    document.getElementById("target_period_to").value = (new Date(today.getFullYear(), today.getMonth(), 25)).toLocaleDateString('sv-SE')
+  }
+  params.forEach((param,key)=>{
+    if (key != "commit") {
+      document.getElementById(key).value = params.get(key)
+    }
+  })
+
+
+  // ボーナスの一覧表示押下
+  function openAllBonusPoints() {
+    window.open('<%= bonus_points_path %>' + '?bonus_datetime_from=' + document.getElementById("target_period_from").value + '&bonus_datetime_to=' + document.getElementById("target_period_to").value)
+  }
+
+
+  // 予約の確認押下
+  function openReservations(id) {
+    window.open('<%= reservations_path %>' + '?therapist_id=' + id + '&reservation_datetime_from=' + document.getElementById("target_period_from").value + '&reservation_datetime_to=' + document.getElementById("target_period_to").value + '&executed=1')
+  }
+
+
+  // ボーナスの確認押下
+  function openBonusPoints(id) {
+    window.open('<%= bonus_points_path %>' + '?therapist_id=' + id + '&bonus_datetime_from=' + document.getElementById("target_period_from").value + '&bonus_datetime_to=' + document.getElementById("target_period_to").value)
+  }
+</script>

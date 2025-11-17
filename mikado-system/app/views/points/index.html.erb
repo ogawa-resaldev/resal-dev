@@ -1,0 +1,144 @@
+<div class="flex flex-col">
+  <!-- 絞り込み -->
+  <div class="py-3 px-4">
+    <%= form_with(url: points_path, method: :get, local: true) do |form| %>
+      <div class="flex space-x-4 items-center">
+        <div>
+          期間<br />
+          <%= form.date_field :target_period_from, class:"py-3 px-4 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+        </div>
+        <div>
+          <br />
+          〜
+        </div>
+        <div>
+          <br />
+          <%= form.date_field :target_period_to, class:"py-3 px-4 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+        </div>
+        <%= form.submit '適用', id: 'apply', class: 'py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none' %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="-m-1.5 overflow-x-auto">
+    <div class="p-1.5 min-w-full inline-block align-middle">
+      <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+        <div class="overflow-hidden">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">セラピスト</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500">合計ポイント(応援pt除く)</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500">予約ポイント (応援pt除く)</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500">
+                  ボーナスポイント (応援pt除く)
+                  <button type="button" onClick="openAllBonusPoints()" class="py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-vertically-centered-modal">
+                    一覧表示
+                  </button>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+              <% @points.each do |id, point| %>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                  <%= point[:therapist] %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                  <%= point[:sum_all] %> (<%= point[:sum_point] %>)
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                  <%= point[:sum_reservation_point] + point[:sum_reservation_support_point] %> (<%= point[:sum_reservation_point] %>)
+                  <br />
+                  <p id="mikado-coin-flow-accordion-<%= id %>" class="text-gray-800 dark:text-gray-400">
+                    <div class="hs-accordion-group" data-hs-accordion-always-open="">
+                      <div class="hs-accordion" id="hs-basic-always-open-heading-one-<%= id %>">
+                        <button type="button" class="hs-accordion-toggle hs-accordion-active:text-blue-600 py-3 inline-flex items-center gap-x-3 font-semibold text-start text-gray-800 hover:text-gray-500 rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:hs-accordion-active:text-blue-500 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:outline-none dark:focus:text-neutral-400" aria-controls="hs-basic-always-open-collapse-one">
+                          <svg class="hs-accordion-active:hidden block size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14"></path>
+                            <path d="M12 5v14"></path>
+                          </svg>
+                          <svg class="hs-accordion-active:block hidden size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14"></path>
+                          </svg>
+                          店舗別
+                        </button>
+                        <div id="hs-basic-always-open-collapse-one-<%= id %>" class="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" aria-labelledby="hs-basic-always-open-heading-one-<%= id %>">
+                          <div class="gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+                            <div class="text-gray-800 dark:text-gray-400">
+                              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                  <tr>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500">店舗</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500">ポイント</th>
+                                  </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                  <% point[:reservation_point].each do |store_id, reservation_point| %>
+                                  <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200"><%= reservation_point[:store_name] %></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200"><%= reservation_point[:reservation_point] + reservation_point[:reservation_support_point] %> (<%= reservation_point[:reservation_point] %>)</td>
+                                  </tr>
+                                  <% end %>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </p>
+                  <button type="button" onClick="openReservations(<%= id %>)" class="py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+                    確認
+                  </button>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                  <%= point[:sum_bonus_point] + point[:sum_bonus_support_point] %> (<%= point[:sum_bonus_point] %>)
+                  <br />
+                  <button type="button" onClick="openBonusPoints(<%= id %>)" class="py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+                    確認
+                  </button>
+                </td>
+              </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 検索パラメータの再設定
+  const params = new URLSearchParams(document.location.search)
+  // もし検索パラメータがなかったら、最初のアクセスなので期間を設定。
+  if (params.toString() == "") {
+    let today = new Date()
+    // sv-SEロケール(スウェーデン)はYYYY-MM-DD形式の日付文字列を戻す。
+    document.getElementById("target_period_from").value = (new Date(today.getFullYear(), today.getMonth() - 1, 26)).toLocaleDateString('sv-SE')
+    document.getElementById("target_period_to").value = (new Date(today.getFullYear(), today.getMonth(), 25)).toLocaleDateString('sv-SE')
+  }
+  params.forEach((param,key)=>{
+    if (key != "commit") {
+      document.getElementById(key).value = params.get(key)
+    }
+  })
+
+
+  // ボーナスの一覧表示押下
+  function openAllBonusPoints() {
+    window.open('<%= bonus_points_path %>' + '?bonus_datetime_from=' + document.getElementById("target_period_from").value + '&bonus_datetime_to=' + document.getElementById("target_period_to").value)
+  }
+
+  // 予約の確認押下
+  function openReservations(id) {
+    window.open('<%= reservations_path %>' + '?therapist_id=' + id + '&reservation_datetime_from=' + document.getElementById("target_period_from").value + '&reservation_datetime_to=' + document.getElementById("target_period_to").value + '&executed=1')
+  }
+
+
+  // ボーナスの確認押下
+  function openBonusPoints(id) {
+    window.open('<%= bonus_points_path %>' + '?therapist_id=' + id + '&bonus_datetime_from=' + document.getElementById("target_period_from").value + '&bonus_datetime_to=' + document.getElementById("target_period_to").value)
+  }
+</script>

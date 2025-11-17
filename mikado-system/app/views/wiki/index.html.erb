@@ -1,0 +1,11 @@
+<div class="flex flex-col" style="font-size: min(3vw, 15px);max-width:700px;">
+  <%= markdown(@wiki_content) %>
+</div>
+
+<script>
+  // imgのキャッシュによる画像更新されない問題の解決。
+  time = new Date().getTime()
+  Array.from(document.getElementsByTagName("img")).forEach(function(image) {
+    image.src = image.src + "?" + time
+  })
+</script>

@@ -1,0 +1,101 @@
+<div class="flex flex-col">
+  <!-- 絞り込み -->
+  <div class="py-3 px-4">
+    <%= form_with(url: mikado_coin_flows_path, method: :get, local: true) do |form| %>
+      <div class="flex space-x-4 items-center">
+        <div class="sm:flex items-center">
+          <div class="flex py-2 sm:px-2">
+            <div>
+              期間<br />
+              <%= form.date_field :mikado_coin_datetime_from, class:"py-3 px-4 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+            </div>
+            <div>
+              <br />
+              &nbsp;〜&nbsp;
+            </div>
+            <div>
+              <br />
+              <%= form.date_field :mikado_coin_datetime_to, class:"py-3 px-4 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+            </div>
+          </div>
+        </div>
+        <%= form.submit '適用', class: 'py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none' %>
+      </div>
+    <% end %>
+  </div>
+
+  <% if @error_id != "" %>
+    <div class="bg-red-50 border border-red-200 text-sm text-red-800 rounded-lg p-4 dark:bg-red-800/10 dark:border-red-900 dark:text-red-500" role="alert">
+      <div class="flex">
+        <div class="ms-4">
+          <div class="mt-2 text-sm text-red-700 dark:text-red-400">
+            <ul class="list-disc space-y-1 ps-5">
+              <li><%= @error_message %></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="-m-1.5 overflow-x-auto">
+    <div class="p-1.5 min-w-full inline-block align-middle">
+      <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+        <div class="overflow-hidden">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">日付</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">セラピスト</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">理由</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">入出庫</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+              <% @mikado_coin_flows.each do |mikado_coin_flow| %>
+                <% if mikado_coin_flow[:id] == @error_id && mikado_coin_flow.is_request %>
+                  <tr class="bg-red-100" >
+                <% else %>
+                  <tr>
+                <% end %>
+                  <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                    <%= l mikado_coin_flow.created_at, format: :date %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                    <%= mikado_coin_flow.user.name %>
+                  </td>
+                  <td class="flex px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                    <%= mikado_coin_flow[:reason] %>
+                    <% if mikado_coin_flow.is_request %>
+                      <div class="flex items-center" >
+                        <%= button_to '承認', approve_mikado_coin_flow_request_path(mikado_coin_flow.id), { params: {id:mikado_coin_flow.id}, form: { onSubmit: "return check('次の入出庫申請を承認しますか？：" + mikado_coin_flow.reason + "','')" }, class:"py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" } %>
+                        <%= button_to '却下', cancel_mikado_coin_flow_request_path(mikado_coin_flow.id), { params: {id:mikado_coin_flow.id}, form: { onSubmit: "return check('次の入出庫申請を却下しますか？：" + mikado_coin_flow.reason + "','')" }, class:"py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:pointer-events-none" } %>
+                      </div>
+                    <% end %>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                    <% if mikado_coin_flow[:direction] == 1 %>
+                      <%= mikado_coin_flow[:coin] %>
+                    <% else %>
+                      <%= -1 * mikado_coin_flow[:coin] %>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 検索パラメータの再設定
+  const params = new URLSearchParams(document.location.search)
+  params.forEach((param,key)=>{
+    if (key != "commit") {
+      document.getElementById(key).value = params.get(key)
+    }
+  })
+</script>

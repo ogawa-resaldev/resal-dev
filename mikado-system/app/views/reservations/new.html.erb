@@ -1,0 +1,743 @@
+<%= form_for (@reservation) do |f| %>
+<div class="border-b border-gray-200 dark:border-neutral-700">
+  <%= render 'shared/error_messages', object: f.object %>
+  <nav class="flex space-x-1" aria-label="Tabs" role="tablist">
+    <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500 active" id="tabs-with-underline-item-1" data-hs-tab="#tabs-with-underline-1" aria-controls="tabs-with-underline-1" role="tab">
+      基本情報
+    </button>
+    <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500" id="tabs-with-underline-item-2" data-hs-tab="#tabs-with-underline-2" aria-controls="tabs-with-underline-2" role="tab">
+      予約者情報
+    </button>
+    <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500" id="tabs-with-underline-item-3" data-hs-tab="#tabs-with-underline-3" aria-controls="tabs-with-underline-3" role="tab">
+      コース料金
+    </button>
+    <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500" id="tabs-with-underline-item-4" data-hs-tab="#tabs-with-underline-4" aria-controls="tabs-with-underline-4" role="tab">
+      予約費用
+    </button>
+    <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500" id="tabs-with-underline-item-5" data-hs-tab="#tabs-with-underline-5" aria-controls="tabs-with-underline-5" role="tab">
+      ポイント
+    </button>
+    <button type="submit", onClick="check('作成しますか？','create-reservation')", id="create-reservation", class="py-3 px-4 inline-flex justify-start items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+      予約作成
+    </button>
+  </nav>
+</div>
+
+<div class="mt-3">
+  <div id="tabs-with-underline-1" role="tabpanel" aria-labelledby="tabs-with-underline-item-1">
+    <p class="text-gray-500 dark:text-neutral-400">
+      <div class="p-4 sm:p-7">
+        <div class="mt-5">
+          <!-- Form -->
+          <div class="grid gap-y-4">
+            <!-- Form Group -->
+            <div>
+              <label class="block text-sm mb-2 dark:text-white">予約店舗</label>
+              <div class="relative">
+                <%= f.select :store_id, @store_select, {}, {class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"} %>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <div class="flex justify-between items-center">
+                <label class="block text-sm mb-2 dark:text-white">セラピスト</label>
+              </div>
+              <div class="relative">
+                <div id="therapist-autocomplete" class="w-1/2 md:w-1/4"></div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <div class="flex justify-between items-center">
+                <label class="block text-sm mb-2 dark:text-white">予約日時</label>
+              </div>
+              <div class="relative">
+                <%= f.date_field :reservation_datetime, value: Date.today, class:"py-3 px-4 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                <%= f.time_select :reservation_datetime, {minute_step: 15, min:"00:00"}, class:"border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <div class="flex justify-between items-center">
+                <label class="block text-sm mb-2 dark:text-white">予約タイプ</label>
+              </div>
+              <div class="relative">
+                <%= f.select :reservation_type_id, @reservation_type_select, {}, {class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"} %>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <div class="flex justify-between items-center">
+                <label class="block text-sm mb-2 dark:text-white">調整済み</label>
+              </div>
+              <div class="relative">
+                <%= f.check_box :adjustment_flag, {checked: true}, "1", "0" %>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+          </div>
+          <!-- End Form -->
+        </div>
+      </div>
+    </p>
+  </div>
+
+  <div id="tabs-with-underline-2" class="hidden" role="tabpanel" aria-labelledby="tabs-with-underline-item-2">
+    <p class="text-gray-500 dark:text-neutral-400">
+      <div class="p-4 sm:p-7">
+        <div class="mt-5">
+          <!-- Form -->
+          <div class="grid gap-y-4">
+            <!-- Form Group -->
+            <div>
+              <label class="block text-sm mb-2 dark:text-white">予約名/電話番号/メールアドレス</label>
+              <div class="relative">
+                <div class="flex items-center">
+                  <%= f.text_field :name, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  /
+                  <%= f.text_field :tel, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  /
+                  <%= f.text_field :mail_address, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                </div>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <label class="block text-sm mb-2 dark:text-white">決済方法</label>
+              <div class="relative">
+                <%= f.select :reservation_payment_method_id, @reservation_payment_method_select, {}, {class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"} %>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <div class="flex justify-between items-center">
+                <label class="block text-sm mb-2 dark:text-white">支払い済み</label>
+              </div>
+              <div class="relative">
+                <%= f.check_box :paid_flag, {checked: false}, "1", "0" %>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <label class="block text-sm mb-2 dark:text-white">利用場所/住所</label>
+              <div class="relative">
+                <div class="flex items-center">
+                  <%= f.text_field :place, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  /
+                  <%= f.text_field :address, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                </div>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <label class="block text-sm mb-2 dark:text-white">SMS/オプション/NG</label>
+              <div class="relative">
+                <div class="flex items-center">
+                  <%= f.text_field :sms, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  /
+                  <%= f.text_field :option, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                  /
+                  <%= f.text_field :ng, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                </div>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+
+            <!-- Form Group -->
+            <div>
+              <label class="block text-sm mb-2 dark:text-white">その他</label>
+              <div class="relative">
+                <div class="flex items-center">
+                  <%= f.text_area :note, class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                </div>
+                <div class="hidden absolute inset-y-0 end-0 pointer-events-none pe-3">
+                  <svg class="size-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <!-- End Form Group -->
+          </div>
+          <!-- End Form -->
+        </div>
+      </div>
+    </p>
+  </div>
+
+  <div id="tabs-with-underline-3" class="hidden" role="tabpanel" aria-labelledby="tabs-with-underline-item-3">
+    <p class="text-gray-500 dark:text-neutral-400">
+      <div class="-m-1.5 overflow-auto">
+        <div class="p-1.5 min-w-full inline-block align-middle">
+          <div class="overflow-hidden">
+            <div class="table border-collapse table-auto w-full divide-y divide-gray-200 dark:divide-neutral-700">
+              <div class="table-header-group">
+                <div class="table-row">
+                  <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">コース<br/>コース詳細</div>
+                  <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">時間（分）<br/>料金（円）</div>
+                  <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">セラピストバック料金（円）</div>
+                  <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">追加/削除</div>
+                </div>
+              </div>
+              <div class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+                <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                  <select id="course_default" class="py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" >
+                    <% @course_select.each do |course_select| %>
+                      <option data-details=<%= course_select[1] %>>
+                        <%= course_select[0] %>
+                      </option>
+                    <% end %>
+                  </select>
+                  <select id="course_detail_default" class="py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" >
+                    <% @course_detail_initial_select.each do |course_detail_initial_select| %>
+                      <option data-duration=<%= course_detail_initial_select[1][:data][:duration] %> data-amount=<%= course_detail_initial_select[1][:data][:amount] %>>
+                        <%= course_detail_initial_select[0] %>
+                      </option>
+                    <% end %>
+                  </select>
+                </div>
+                <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                  <input type="text" id="course_duration_default" value=<%= @course_initial_duration %> class="py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" />
+                  <br/>
+                  <input type="text" id="course_amount_default" value=<%= @course_initial_amount %> class="py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" />
+                </div>
+                <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                  バック率
+                  <input type="text" id="course_therapist_back_ratio" value=0 class="py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"/>
+                  %
+                  <button type="button" id="get-therapist-back-ratio" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+                    取得
+                  </button>
+                  </br>
+                  <button type="button" id="apply-therapist-back-ratio" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+                    ↓適用
+                  </button>
+                </div>
+                <div class="inline-block align-middle">
+                  <%= link_to_add_association "コースを追加", f, :reservation_courses, class:'py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none', data: {association_insertion_node: '#reservation_courses', association_insertion_method: :append} %>
+                </div>
+              </div>
+              <div class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+                <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                </div>
+              </div>
+              <div id="reservation_courses" class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+                <%= f.fields_for :reservation_courses do |course| %>
+                  <%= render 'reservation_course_fields', f: course %>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p>
+  </div>
+
+  <div id="tabs-with-underline-4" class="hidden" role="tabpanel" aria-labelledby="tabs-with-underline-item-4">
+    <p class="text-gray-500 dark:text-neutral-400">
+      <div class="-m-1.5 overflow-auto">
+        <div class="p-1.5 min-w-full inline-block align-middle">
+          <div class="overflow-hidden">
+            <button type="button" id="calc-and-add-fees" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+              自動計算
+            </button>
+            (事前指名料金、深夜料金の計算。また、セラピストとコースを指定している場合は指名料と新人割も計算。)
+            <div class="table border-collapse table-auto w-full divide-y divide-gray-200 dark:divide-neutral-700">
+              <div class="table-header-group">
+                <div class="table-row">
+                  <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">費用種別</div>
+                  <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">費用詳細</div>
+                  <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">料金（円）</div>
+                  <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">セラピストバック料金（円）</div>
+                  <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">追加/削除</div>
+                </div>
+              </div>
+              <div class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+                <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                  <select id="reservation_fee_default" class="py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" >
+                    <% @reservation_cost_select.each do |reservation_cost_select| %>
+                      <option data-details=<%= reservation_cost_select[1] %>>
+                        <%= reservation_cost_select[0] %>
+                      </option>
+                    <% end %>
+                  </select>
+                </div>
+                <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                  <select id="reservation_fee_detail_default" class="py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" >
+                    <% @reservation_cost_detail_initial_select.each do |reservation_cost_detail_initial_select| %>
+                      <option data-amount=<%= reservation_cost_detail_initial_select[1][:data][:amount] %> data-back_therapist_amount=<%= reservation_cost_detail_initial_select[1][:data][:back_therapist_amount] %>>
+                        <%= reservation_cost_detail_initial_select[0] %>
+                      </option>
+                    <% end %>
+                  </select>
+                </div>
+                <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                  <input type="text" id="reservation_fee_amount_default" value=<%= @reservation_cost_initial_amount %> class="py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" />
+                </div>
+                <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                  <input type="text" id="reservation_fee_back_therapist_amount_default" value=<%= @reservation_cost_initial_back_therapist_amount %> class="py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" />
+                </div>
+                <div class="inline-block align-middle">
+                  <%= link_to_add_association "費用を追加", f, :reservation_fees, id:'add_reservation_fee_button', class:'py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none', data: {association_insertion_node: '#reservation_fees', association_insertion_method: :append} %>
+                </div>
+              </div>
+              <div class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+                <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                </div>
+              </div>
+              <div id="reservation_fees" class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+                <%= f.fields_for :reservation_fees do |fee| %>
+                  <%= render 'reservation_fee_fields', f: fee %>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p>
+  </div>
+
+  <div id="tabs-with-underline-5" class="hidden" role="tabpanel" aria-labelledby="tabs-with-underline-item-5">
+    <p class="text-gray-500 dark:text-neutral-400">
+      <div class="-m-1.5 overflow-auto">
+        <div class="p-1.5 min-w-full inline-block align-middle">
+          <div class="overflow-hidden">
+            <button type="button" id="calc-and-add-points" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+              自動付与
+            </button>
+            (リピートの場合のみ、コースのポイントは計算されます。)
+            <div class="table border-collapse table-auto w-full divide-y divide-gray-200 dark:divide-neutral-700">
+              <div class="table-header-group">
+                <div class="table-row">
+                  <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">ポイント名</div>
+                  <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">ポイント詳細</div>
+                  <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">ポイント</div>
+                  <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">応援ポイント</div>
+                </div>
+              </div>
+              <div class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+                <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                  <select id="reservation_point_default" class="py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" >
+                    <% @reservation_point_select.each do |reservation_point_select| %>
+                      <option data-details=<%= reservation_point_select[1] %>>
+                        <%= reservation_point_select[0] %>
+                      </option>
+                    <% end %>
+                  </select>
+                </div>
+                <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                  <select id="reservation_point_detail_default" class="py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" >
+                    <% @reservation_point_detail_initial_select.each do |reservation_point_detail_initial_select| %>
+                      <option data-point=<%= reservation_point_detail_initial_select[1][:data][:point] %> data-support_point=<%= reservation_point_detail_initial_select[1][:data][:support_point] %>>
+                        <%= reservation_point_detail_initial_select[0] %>
+                      </option>
+                    <% end %>
+                  </select>
+                </div>
+                <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                  <input type="text" id="reservation_point_point_default" value=<%= @reservation_point_initial_point %> class="py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" />
+                </div>
+                <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                  <input type="text" id="reservation_point_support_point_default" value=<%= @reservation_point_initial_support_point %> class="py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" />
+                </div>
+                <div class="inline-block align-middle">
+                  <%= link_to_add_association "ポイントを追加", f, :reservation_points, id:'add_reservation_point_button', class:'py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none', data: {association_insertion_node: '#reservation_points', association_insertion_method: :append} %>
+                </div>
+              </div>
+              <div class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+                <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+                </div>
+              </div>
+              <div id="reservation_points" class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+                <%= f.fields_for :reservation_points do |point| %>
+                  <%= render 'reservation_point_fields', f: point %>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p>
+  </div>
+</div>
+<% end %>
+
+<%= javascript_include_tag('reservations') %>
+<%= javascript_include_tag('therapist_autocomplete') %>
+
+<script>
+  // セラピストのautocompleteフォームを作成。
+  createTherapistAutocomplete("reservation[therapist_id]")
+  updateTherapistAutocompleteList(document.getElementById("reservation_store_id").selectedOptions[0].dataset.therapist, "reservation[therapist_id]")
+  document.getElementById("reservation_store_id").addEventListener('change', function (event) {
+    updateTherapistAutocompleteList(document.getElementById("reservation_store_id").selectedOptions[0].dataset.therapist, "reservation[therapist_id]")
+  })
+
+
+  // date_fieldは初期値を保持してそっちで更新かける不具合があるので、強制的に書き換えておく。
+  document.getElementById("reservation_reservation_datetime").addEventListener('change', function (event) {
+    document.getElementById("reservation_reservation_datetime_1i").value = document.getElementById("reservation_reservation_datetime").value.split("-")[0];
+    document.getElementById("reservation_reservation_datetime_2i").value = document.getElementById("reservation_reservation_datetime").value.split("-")[1];
+    document.getElementById("reservation_reservation_datetime_3i").value = document.getElementById("reservation_reservation_datetime").value.split("-")[2];
+  })
+
+
+  // ポイントの自動付与押下。
+  document.getElementById("calc-and-add-points").addEventListener('click', async function (event) {
+    // 予約パラメータを取得。
+    reservationCourses = []
+    Array.from(document.getElementById("reservation_courses").children).forEach((reservationCourse) => {
+      if (reservationCourse.tagName == "DIV" && reservationCourse.style.display != "none") {
+        reservationCourses.push({"course":reservationCourse.children[0].children[0].value, "course_detail":reservationCourse.children[0].children[2].value})
+      }
+    })
+    reservationFees = []
+    Array.from(document.getElementById("reservation_fees").children).forEach((reservationFee) => {
+      if (reservationFee.tagName == "DIV" && reservationFee.style.display != "none") {
+        reservationFees.push({"fee_type":reservationFee.children[0].children[0].value, "fee_detail":reservationFee.children[1].children[0].value})
+      }
+    })
+    reservationTel = document.getElementById("reservation_tel").value
+    reservationMailAddress = document.getElementById("reservation_mail_address").value
+    reservationStoreId = document.getElementById("reservation_store_id").value
+    reservationTherapistId = document.getElementById("reservation[therapist_id]").value
+    // ポイントがすでに存在しているかどうかの確認用のリスト。
+    reservationPoints = []
+    Array.from(document.getElementById("reservation_points").children).forEach((reservationPoint) => {
+      if (reservationPoint.tagName == "DIV" && reservationPoint.style.display != "none") {
+        reservationPoints.push(reservationPoint.children[0].children[0].value + reservationPoint.children[1].children[0].value)
+      }
+    })
+
+    point_list = await calcPoints(
+      reservationCourses,
+      reservationFees,
+      reservationTel,
+      reservationMailAddress,
+      reservationStoreId,
+      reservationTherapistId
+    )
+
+    addReservationPointButton = document.getElementById("add_reservation_point_button");
+    defaultReservationPointDefault = reservationPointDefault.selectedOptions[0].value
+    defaultReservationPointDetailDefault = reservationPointDetailDefault.selectedOptions[0].value
+    defaultReservationPointPointDefault = reservationPointPointDefault.value
+    defaultReservationPointSupportPointDefault = reservationPointSupportPointDefault.value
+    point_list.forEach((point) => {
+      if (!reservationPoints.includes(point[0] + point[1])) {
+        reservationPointDefault.selectedOptions[0].value = point[0]
+        reservationPointDetailDefault.selectedOptions[0].value = point[1]
+        reservationPointPointDefault.value = point[2]
+        reservationPointSupportPointDefault.value = point[3]
+        addReservationPointButton.click()
+      }
+    })
+    reservationPointDefault.selectedOptions[0].value = defaultReservationPointDefault
+    reservationPointDetailDefault.selectedOptions[0].value = defaultReservationPointDetailDefault
+    reservationPointPointDefault.value = defaultReservationPointPointDefault
+    reservationPointSupportPointDefault.value = defaultReservationPointSupportPointDefault
+  })
+
+
+  // 費用の自動計算押下。
+  document.getElementById("calc-and-add-fees").addEventListener('click', async function (event) {
+    // クレジット手数料の計算用に金額を合計する。
+    sumAmount = 0
+    // 予約パラメータを取得。
+    reservationDate = document.getElementById("reservation_reservation_datetime").value
+    reservationHour = document.getElementById("reservation_reservation_datetime_4i").value
+    reservationMinute = document.getElementById("reservation_reservation_datetime_5i").value
+    reservationCourses = []
+    Array.from(document.getElementById("reservation_courses").children).forEach((reservationCourse) => {
+      if (reservationCourse.tagName == "DIV" && reservationCourse.style.display != "none") {
+        reservationCourses.push({
+          course: reservationCourse.children[0].children[0].value,
+          courseDetail: reservationCourse.children[0].children[2].value,
+          courseDuration: reservationCourse.children[1].children[0].value,
+          coursePrice: reservationCourse.children[1].children[2].value
+        })
+        sumAmount = sumAmount + Number(reservationCourse.children[1].children[2].value)
+      }
+    })
+    // 費用がすでに存在しているかどうかの確認用のリスト。
+    reservationFees = []
+    Array.from(document.getElementById("reservation_fees").children).forEach((reservationFee) => {
+      if (reservationFee.tagName == "DIV" && reservationFee.style.display != "none") {
+        // クレジット手数料は毎回最後に計算し直す。
+        if (reservationFee.children[0].children[0].value == "クレジット手数料") {
+          reservationFee.children[4].children[1].click()
+        } else {
+          reservationFees.push(reservationFee.children[0].children[0].value + reservationFee.children[1].children[0].value)
+        }
+      }
+    })
+
+    reservationTypeId = document.getElementById("reservation_reservation_type_id").value
+    reservationStoreId = document.getElementById("reservation_store_id").value
+    reservationTherapistId = document.getElementById("reservation[therapist_id]").value
+
+    fee_list = await calcFees(
+      reservationDate.split("-")[0],
+      reservationDate.split("-")[1],
+      reservationDate.split("-")[2],
+      reservationHour,
+      reservationMinute,
+      reservationCourses,
+      reservationTypeId,
+      reservationStoreId,
+      reservationTherapistId
+    )
+
+    addReservationFeeButton = document.getElementById("add_reservation_fee_button");
+    defaultReservationFeeDefault = reservationFeeDefault.selectedOptions[0].value
+    defaultReservationFeeDetailDefault = reservationFeeDetailDefault.selectedOptions[0].value
+    defaultReservationFeeAmountDefault = reservationFeeAmountDefault.value
+    defaultReservationFeeBackTherapistAmountDefault = reservationFeeBackTherapistAmountDefault.value
+    fee_list.forEach((fee) => {
+      if (!reservationFees.includes(fee[0] + fee[1])) {
+        reservationFeeDefault.selectedOptions[0].value = fee[0]
+        reservationFeeDetailDefault.selectedOptions[0].value = fee[1]
+        reservationFeeAmountDefault.value = fee[2]
+        reservationFeeBackTherapistAmountDefault.value = fee[3]
+        addReservationFeeButton.click()
+      }
+    })
+
+    // クレジット手数料の算出。
+    reservationPaymentMethodId = document.getElementById("reservation_reservation_payment_method_id").value
+    if (reservationPaymentMethodId == "3") {
+      Array.from(document.getElementById("reservation_fees").children).forEach((reservationFee) => {
+        if (reservationFee.tagName == "DIV" && reservationFee.style.display != "none") {
+          sumAmount = sumAmount + Number(reservationFee.children[2].children[0].value)
+        }
+      })
+      credit_fee = await calcCreditFee(sumAmount, reservationStoreId)
+      if (credit_fee != null) {
+        reservationFeeDefault.selectedOptions[0].value = credit_fee[0]
+        reservationFeeDetailDefault.selectedOptions[0].value = credit_fee[1]
+        reservationFeeAmountDefault.value = credit_fee[2]
+        reservationFeeBackTherapistAmountDefault.value = credit_fee[3]
+        addReservationFeeButton.click()
+      }
+    }
+
+    reservationFeeDefault.selectedOptions[0].value = defaultReservationFeeDefault
+    reservationFeeDetailDefault.selectedOptions[0].value = defaultReservationFeeDetailDefault
+    reservationFeeAmountDefault.value = defaultReservationFeeAmountDefault
+    reservationFeeBackTherapistAmountDefault.value = defaultReservationFeeBackTherapistAmountDefault
+  })
+
+
+  // セラピストバック率取得を押下。
+  document.getElementById("get-therapist-back-ratio").addEventListener('click', async function (event) {
+    // 予約パラメータを取得。
+    reservationStoreId = document.getElementById("reservation_store_id").value
+    reservationTherapistId = document.getElementById("reservation[therapist_id]").value
+
+    therapistBackRatio = await getTherapistBackRatio(reservationStoreId, reservationTherapistId)
+    courseTherapistBackRatio.value = Number(therapistBackRatio)
+  })
+
+
+  // セラピストバック率適用を押下。
+  document.getElementById("apply-therapist-back-ratio").addEventListener('click', async function (event) {
+    therapistBackRatio = courseTherapistBackRatio.value
+    Array.from(document.getElementById("reservation_courses").children).forEach((reservationCourse) => {
+      if (reservationCourse.tagName == "DIV" && reservationCourse.style.display != "none") {
+        reservationCourse.children[2].children[0].value = Math.round(reservationCourse.children[1].children[2].value * (therapistBackRatio / 100) /100) * 100
+      }
+    })
+  })
+
+
+  // 店舗、セラピストの選択
+  reservationStore = document.getElementById("reservation_store_id")
+  reservationTherapist = document.getElementById("reservation[therapist_id]")
+  reservationStore.addEventListener('change', function (event) {
+    reservationTherapist.innerHTML = '';
+    updateTherapistAutocompleteList(reservationStore.selectedOptions[0].dataset.therapist, "reservation[therapist_id]")
+  })
+
+
+  // ポイントの選択
+  reservationPointDefault = document.getElementById("reservation_point_default")
+  reservationPointDetailDefault = document.getElementById("reservation_point_detail_default")
+  reservationPointPointDefault = document.getElementById("reservation_point_point_default")
+  reservationPointSupportPointDefault = document.getElementById("reservation_point_support_point_default")
+  reservationPointDefault.addEventListener('change', function (event) {
+    reservationPointDetailDefault.innerHTML = '';
+    JSON.parse(reservationPointDefault.selectedOptions[0].dataset.details).forEach(function(option,index){
+      var op = document.createElement('option');
+      op.text = option[0]
+      op.dataset.point = option[1]["data"]["point"]
+      op.dataset.support_point = option[1]["data"]["support_point"]
+      reservationPointDetailDefault.appendChild(op);
+      // ポイントの設定
+      if (index == 0){
+        reservationPointPointDefault.value = option[1]["data"]["point"]
+        reservationPointSupportPointDefault.value = option[1]["data"]["support_point"]
+      }
+    })
+  })
+
+
+  // ポイント詳細の選択
+  reservationPointDetailDefault.addEventListener('change', function (event) {
+    reservationPointPointDefault.value = reservationPointDetailDefault.selectedOptions[0].dataset.point
+    reservationPointSupportPointDefault.value = reservationPointDetailDefault.selectedOptions[0].dataset.support_point
+  })
+
+
+  // ポイント追加時に、defaultを反映
+  reservationPoints = document.getElementById("reservation_points")
+  reservationPoints.addEventListener('cocoon:after-insert', function(e){
+    targetNodes = e.srcElement.children[e.srcElement.children.length - 1].children
+    targetNodes[0].children[0].value = reservationPointDefault.selectedOptions[0].value
+    targetNodes[1].children[0].value = reservationPointDetailDefault.selectedOptions[0].value
+    targetNodes[2].children[0].value = reservationPointPointDefault.value
+    targetNodes[3].children[0].value = reservationPointSupportPointDefault.value
+  })
+
+
+  // 予約費用の選択
+  reservationFeeDefault = document.getElementById("reservation_fee_default")
+  reservationFeeDetailDefault = document.getElementById("reservation_fee_detail_default")
+  reservationFeeAmountDefault = document.getElementById("reservation_fee_amount_default")
+  reservationFeeBackTherapistAmountDefault = document.getElementById("reservation_fee_back_therapist_amount_default")
+  reservationFeeDefault.addEventListener('change', function (event) {
+    reservationFeeDetailDefault.innerHTML = '';
+    JSON.parse(reservationFeeDefault.selectedOptions[0].dataset.details).forEach(function(option,index){
+      var op = document.createElement('option');
+      op.text = option[0]
+      op.dataset.amount = option[1]["data"]["amount"]
+      op.dataset.back_therapist_amount = option[1]["data"]["back_therapist_amount"]
+      reservationFeeDetailDefault.appendChild(op);
+      // 料金の設定
+      if (index == 0){
+        reservationFeeAmountDefault.value = option[1]["data"]["amount"]
+        reservationFeeBackTherapistAmountDefault.value = option[1]["data"]["back_therapist_amount"]
+      }
+    })
+  })
+
+
+  // 予約費用詳細の選択
+  reservationFeeDetailDefault.addEventListener('change', function (event) {
+    reservationFeeAmountDefault.value = reservationFeeDetailDefault.selectedOptions[0].dataset.amount
+    reservationFeeBackTherapistAmountDefault.value = reservationFeeDetailDefault.selectedOptions[0].dataset.back_therapist_amount
+  })
+
+
+  // 予約費用追加時に、defaultを反映
+  reservationFees = document.getElementById("reservation_fees")
+  reservationFees.addEventListener('cocoon:after-insert', function(e){
+    targetNodes = e.srcElement.children[e.srcElement.children.length - 1].children
+    targetNodes[0].children[0].value = reservationFeeDefault.selectedOptions[0].value
+    targetNodes[1].children[0].value = reservationFeeDetailDefault.selectedOptions[0].value
+    targetNodes[2].children[0].value = reservationFeeAmountDefault.value
+    targetNodes[3].children[0].value = reservationFeeBackTherapistAmountDefault.value
+  })
+
+
+  // コース料金の選択
+  courseDefault = document.getElementById("course_default")
+  courseDetailDefault = document.getElementById("course_detail_default")
+  courseDurationDefault = document.getElementById("course_duration_default")
+  courseAmountDefault = document.getElementById("course_amount_default")
+  courseTherapistBackRatio = document.getElementById("course_therapist_back_ratio")
+  courseDefault.addEventListener('change', function (event) {
+    courseDetailDefault.innerHTML = '';
+    JSON.parse(courseDefault.selectedOptions[0].dataset.details).forEach(function(option,index){
+      var op = document.createElement('option');
+      op.text = option[0]
+      op.dataset.duration = option[1]["data"]["duration"]
+      op.dataset.amount = option[1]["data"]["amount"]
+      courseDetailDefault.appendChild(op);
+      // 時間および料金の設定
+      if (index == 0){
+        courseDurationDefault.value = option[1]["data"]["duration"]
+        courseAmountDefault.value = option[1]["data"]["amount"]
+      }
+    })
+  })
+
+
+  // コース料金詳細の選択
+  courseDetailDefault.addEventListener('change', function (event) {
+    courseDurationDefault.value = courseDetailDefault.selectedOptions[0].dataset.duration
+    courseAmountDefault.value = courseDetailDefault.selectedOptions[0].dataset.amount
+  })
+
+
+  // コース料金追加時に、defaultを反映
+  reservationCourses = document.getElementById("reservation_courses")
+  reservationCourses.addEventListener('cocoon:after-insert', function(e){
+    targetNodes = e.srcElement.children[e.srcElement.children.length - 1].children
+    targetNodes[0].children[0].value = courseDefault.selectedOptions[0].value
+    targetNodes[0].children[2].value = courseDetailDefault.selectedOptions[0].value
+    targetNodes[1].children[0].value = courseDurationDefault.value
+    targetNodes[1].children[2].value = courseAmountDefault.value
+    targetNodes[2].children[0].value = Math.round(courseAmountDefault.value * (courseTherapistBackRatio.value / 100) /100) * 100
+  })
+</script>
