@@ -1,0 +1,207 @@
+# Files in the config/locales directory are used for internationalization
+# and are automatically loaded by Rails. If you want to use locales other
+# than English, add the necessary files in this directory.
+#
+# To use the locales, use `I18n.t`:
+#
+#     I18n.t "hello"
+#
+# In views, this is aliased to just `t`:
+#
+#     <%= t("hello") %>
+#
+# To use a different locale, set it with `I18n.locale`:
+#
+#     I18n.locale = :es
+#
+# This would use the information in config/locales/es.yml.
+#
+# The following keys must be escaped otherwise they will not be retrieved by
+# the default I18n backend:
+#
+# true, false, on, off, yes, no
+#
+# Instead, surround them with single quotes.
+#
+# en:
+#   "true": "foo"
+#
+# To learn more, please read the Rails Internationalization guide
+# available at https://guides.rubyonrails.org/i18n.html.
+
+ja:
+  time:
+    formats:
+      default: "%Y/%m/%d (%a) %H:%M"
+      date: "%Y/%m/%d (%a)"
+  date:
+    abbr_day_names: ["日", "月", "火", "水", "木", "金", "土"]
+    formats:
+      date: "%Y/%m/%d (%a)"
+  activerecord:
+    models:
+      applicant: 応募者
+      bonus_point: ボーナスポイント
+      cash_flow: 清算
+      mikado_coin_flow: 帝コイン入出庫
+      miscellaneous_expenses_request: 雑費申請
+      pass_classification: 通過区分
+      pass_classification_fee: 通過区分費用
+      point: ポイント
+      reservation: 予約
+      review: レビュー
+      store: 店舗
+      store_group: 店舗グループ
+      user: ユーザー
+    attributes:
+      applicant:
+        pass_classification: 通過区分
+        interview_datetime: 面接日時
+        professional_name: 源氏名
+        instructor: 担当講師
+        training_datetime: 研修日時
+        photographer_studio: カメラマン・スタジオ
+        shooting_datetime: 撮影日時
+      applicant_detail:
+        name: 応募者氏名
+        mail_address: メールアドレス
+        tel: 電話番号
+        application_date: 応募日
+        age: 年齢
+        height: 身長
+        weight: 体重
+        nearest_station: 最寄駅
+        education: 学歴
+        occupation: 職業
+        work_frequency: 出勤頻度
+        experience_count: 経験人数
+        smoking: 喫煙
+        has_tattoo: タトゥーの有無
+        therapist_experience: セラピスト経験・期間
+        mosaic: モザイク
+        how_to_know: 当店をどこで知りましたか？
+        motivation: 志望動機
+        self_pr: 自己アピール
+        other_questions: その他、ご質問等
+        preferred_store: 希望の所属店舗
+      applicant_fees:
+        fee_name: 費用名
+        amount: 料金
+        receive_date: 受取日
+      applicant_mail_template:
+        mail_template_name: テンプレート名
+      bonus_point:
+        occurrence_date: 発生日
+        user: ユーザー
+        store_group: 店舗グループ
+        point: ポイント
+        support_point: 応援ポイント
+      cash_flow:
+        occurrence_date: 発生日
+        cash_flow_period: 支払い期限
+        user: ユーザー
+        amount: 金額
+      mikado_coin_flow_request:
+        user: ユーザー
+        coin: コイン
+        direction: 入出庫の方向
+        reason: 理由
+      mikado_coin_flow:
+        user: ユーザー
+        coin: コイン
+        direction: 入出庫の方向
+        reason: 理由
+      miscellaneous_expenses_request:
+        occurrence_date: 発生日
+        user: ユーザー
+        miscellaneous_expenses: 説明
+        amount: 金額
+      pass_classification:
+        classification_name: 通過区分名
+      pass_classification_fees:
+        fee_name: 費用名
+        amount: 金額
+      point:
+        occurrence_date: 発生日
+        user: ユーザー
+        point: ポイント
+      reservation:
+        name: 予約名
+        tel: 電話番号
+        mail_address: メールアドレス
+        place: 利用場所
+        reservation_fees: 予約費用
+        reservation_courses: 予約コース
+      reservation_courses:
+        duration: 所要時間(予約コース)
+        amount: 料金(予約コース)
+        back_therapist_amount: セラピストバック料金(予約コース)
+      reservation_fees:
+        amount: 料金(予約費用)
+        back_therapist_amount: セラピストバック料金(予約費用)
+      review:
+        reservation_name: 予約名
+        reservation_mail_address: 予約メールアドレス
+        post_date: 投稿日
+        content: 内容
+      store:
+        store_name: 店舗名
+        store_url: 店舗URL
+      store_group:
+        name: グループ名
+        credit_fee_percentage: クレジット手数料
+        mail_api: メールAPI
+        mail_name: メールの表記名
+        mail_signature: メールの署名
+        mail_transfer_bank: メールの銀行振込先
+        mail_credit_1: メールのクレジット情報1
+        mail_credit_2: メールのクレジット情報2
+        line_client_id: LINEのクライアントID
+        line_client_secret: LINEのクライアントシークレット
+        line_default_target_id: LINEのデフォルトの送信ID
+      user:
+        name: ユーザー名
+        password: パスワード
+        login_id: ログインID
+      user_rank:
+        user: ユーザー
+        rank: ランク
+      user_therapists:
+        therapist_id: セラピスト
+    errors:
+      messages:
+        record_invalid: 'バリデーションに失敗しました: %{errors}'
+        restrict_dependent_destroy:
+          has_one: "%{record}が存在しているので削除できません"
+          has_many: "%{record}が存在しているので削除できません"
+  errors:
+    format: "%{attribute}%{message}"
+    messages:
+      accepted: を受諾してください
+      blank: を入力してください
+      confirmation: と%{attribute}の入力が一致しません
+      empty: を入力してください
+      equal_to: は%{count}にしてください
+      even: は偶数にしてください
+      exclusion: は予約されています
+      greater_than: は%{count}より大きい値にしてください
+      greater_than_or_equal_to: は%{count}以上の値にしてください
+      in: は%{count}の範囲に含めてください
+      inclusion: は一覧にありません
+      invalid: は不正な値です
+      less_than: は%{count}より小さい値にしてください
+      less_than_or_equal_to: は%{count}以下の値にしてください
+      model_invalid: 'バリデーションに失敗しました: %{errors}'
+      not_a_number: は数値で入力してください
+      not_an_integer: は整数で入力してください
+      odd: は奇数にしてください
+      other_than: は%{count}以外の値にしてください
+      present: は入力しないでください
+      required: を入力してください
+      taken: が被っています。別のものにしてください
+      too_long: は%{count}文字以内で入力してください
+      too_short: は%{count}文字以上で入力してください
+      wrong_length: は%{count}文字で入力してください
+    template:
+      body: 次の項目を確認してください
+      header: "%{model}に%{count}個のエラーが発生しました"

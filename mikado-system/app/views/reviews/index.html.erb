@@ -1,0 +1,179 @@
+<div class="flex flex-col">
+  <!-- 絞り込み -->
+  <div class="py-3 px-4">
+    <%= form_with(url: reviews_path, method: :get, local: true) do |form| %>
+      <div class="sm:flex items-center">
+        <div class="flex py-2 sm:px-2">
+          <div class="py-2 sm:px-2">
+            セラピスト<br />
+            <div id="therapist-autocomplete"></div>
+          </div>
+          <div class="flex py-2 sm:px-2">
+            <div>
+              期間<br />
+              <%= form.date_field :post_date_from, class:"py-3 px-4 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+            </div>
+            <div>
+              <br />
+              &nbsp;〜&nbsp;
+            </div>
+            <div>
+              <br />
+              <%= form.date_field :post_date_to, class:"py-3 px-4 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+            </div>
+          </div>
+          <div class="py-2 sm:px-2">
+            フリーワード<br />
+            <%= form.text_field :free_word, placeholder:"ニックネーム、内容", class:"py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+          </div>
+          <div class="py-2 sm:px-2">
+            <%= form.submit '絞り込み', id: 'apply', class: 'py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none' %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="text-end">
+    <%= @reviews.count %>件
+  </div>
+  <div class="overflow-x-auto">
+    <div class="p-1.5 min-w-full inline-block align-middle">
+      <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+        <div class="overflow-hidden">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">詳細</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">表示/非表示</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">セラピスト</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">ニックネーム</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">投稿日</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">内容</th>
+                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">レビューID</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+              <% @reviews.each do |review| %>
+              <% if review.display_flag %>
+                <tr>
+              <% else %>
+                <tr class="bg-gray-50" >
+              <% end %>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                  <button type="button" class="py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-vertically-centered-modal-<%= review.id %>">
+                    表示
+                  </button>
+                </td>
+                <% if review.display_flag %>
+                  <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                    表示
+                <% else %>
+                  <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-red-500 dark:text-gray-200">
+                    非表示
+                <% end %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200"><%= review.user.name %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200"><%= review.nickname %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200"><%= review.post_date %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-start text-sm text-gray-800 dark:text-gray-200"><%= review.abridged_content %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-start text-sm font-medium text-gray-800 dark:text-gray-200"><%= review.id %></td>
+              </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 詳細modalの定義。 -->
+<% @reviews.each do |review| %>
+<div id="hs-vertically-centered-modal-<%= review.id %>" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+  <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+    <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+      <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+        <h3 class="font-bold text-gray-800 dark:text-white">
+          レビューID：<%= review.id %>
+        </h3>
+        <a href="/reviews/<%= review.id %>/edit" target="_blank" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+          編集
+        </a>
+        <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay="#hs-vertically-centered-modal-<%= review.id %>">
+          <span class="sr-only">Close</span>
+          <svg class="flex-shrink-0 size-8" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="overflow-x-hidden" style="height:70vh;">
+        <div class="flex justify-start gap-x-2 py-3 px-4">
+          <div class="p-4 overflow-y-auto">
+            <p class="text-gray-800 dark:text-gray-400">
+              <% if !review.display_flag %>
+                ※非表示になっています。
+              <% end %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              セラピスト：<%= review.user.name %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              予約名：<%= review.reservation_name %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              予約メールアドレス：<%= review.reservation_mail_address %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              ニックネーム(表示名)：<%= review.nickname %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              年齢：<%= review.age %>
+            </p>
+            <p class="text-gray-800 dark:text-gray-400">
+              投稿日：<%= review.post_date %>
+            </p>
+            <br />
+            <p class="text-gray-800 dark:text-gray-400">
+              内容<br />
+              <%= simple_format(review.content) %>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-neutral-700">
+        <button type="button" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700" data-hs-overlay="#hs-vertically-centered-modal-<%= review.id %>">
+          閉じる
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<% end %>
+
+<%= javascript_include_tag('therapist_autocomplete') %>
+
+<script>
+  // セラピスト名の自動補完
+  createTherapistAutocomplete()
+
+
+  // 検索パラメータの再設定
+  params = new URLSearchParams(document.location.search)
+  // もし検索パラメータがなかったら、最初のアクセスなので期間を定義。
+  if (params.toString() == "") {
+    let today = new Date()
+    // sv-SEロケール(スウェーデン)はYYYY-MM-DD形式の日付文字列を戻す。
+    document.getElementById("post_date_from").value = (new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7)).toLocaleDateString('sv-SE')
+    document.getElementById("post_date_to").value = (new Date()).toLocaleDateString('sv-SE')
+  }
+  params.forEach((param,key)=>{
+    if (key != "commit") {
+      document.getElementById(key).value = params.get(key)
+    }
+  })
+
+
+  updateTherapistAutocompleteList(`<%= @therapist_autocomplete %>`)
+</script>

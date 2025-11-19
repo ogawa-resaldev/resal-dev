@@ -60,8 +60,8 @@ services:
     networks:
       - webnet
     volumes:
-      - ./docker/mysql/data:/var/lib/mysql
-      - ./docker/mysql/custom.cnf:/etc/mysql/conf.d/custom.cnf
+      - ./docker/mysql1/data:/var/lib/mysql
+      - ./docker/mysql1/conf.d:/etc/mysql/conf.d
     environment:
       - MYSQL_ROOT_PASSWORD=5swB2ANBrs
       - MYSQL_DATABASE=first_db
@@ -69,6 +69,43 @@ services:
       - MYSQL_PASSWORD=HF7_AVgxL3
     ports:
       - 3316:3306
+    command: --default-authentication-plugin=mysql_native_password
+
+  web2:
+    build:
+      context: ./mikado-system
+    networks:
+      - webnet
+    volumes:
+      - ./mikado-system:/mikado-system
+    command: bash -c "rm -f tmp/pids/server.pid && npm install && service cron start && bundle exec whenever --update-crontab && bundle exec rails tailwindcss:build && bundle exec wheneverize && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    environment:
+      TZ: Asia/Tokyo
+      VIRTUAL_HOST: mikado.resal-dev.com
+      VIRTUAL_PORT: 3000
+      LETSENCRYPT_HOST: mikado.resal-dev.com
+      LETSENCRYPT_EMAIL: resaldev20240421@gmail.com
+    expose:
+      - "3000"
+    stdin_open: true
+    tty: true
+    depends_on:
+      - mysql2
+
+  mysql2:
+    image: mysql:8.0
+    networks:
+      - webnet
+    volumes:
+      - ./docker/mysql2/data:/var/lib/mysql
+      - ./docker/mysql2/conf.d:/etc/mysql/conf.d
+    environment:
+      - MYSQL_ROOT_PASSWORD=5swB2ANBrs
+      - MYSQL_DATABASE=mikado_db
+      - MYSQL_USER=mikado_user
+      - MYSQL_PASSWORD=HF7_AVgxL3
+    ports:
+      - 3326:3306
     command: --default-authentication-plugin=mysql_native_password
 
 networks:

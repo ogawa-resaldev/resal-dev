@@ -1,0 +1,118 @@
+<div class="flex flex-col">
+  <%= render 'shared/error_messages', object: @new_applicant_line_template %>
+  <div class="overflow-x-auto">
+    <div class="p-1.5 min-w-full inline-block align-middle">
+      <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+        <div class="overflow-hidden">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">テンプレート名</th>
+                <% if session[:user_role_id] == 2 %>
+                  <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">店舗グループ</th>
+                <% end %>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">編集</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+              <% @applicant_line_templates.each do |applicant_line_template| %>
+                <% if applicant_line_template.errors.present? %>
+                  <%= render 'shared/error_messages', object: applicant_line_template %>
+                <% end %>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                    <%= applicant_line_template.line_template_name %>
+                  </td>
+                  <% if session[:user_role_id] == 2 %>
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                      <%= applicant_line_template.store_group.name %>
+                    </td>
+                  <% end %>
+                  <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                    <button type="button" name="update-button" data-status="2" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-update-modal-<%= applicant_line_template.id %>">
+                      編集
+                    </button>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <button type="button" name="create-button" data-status="2" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-green-600 text-white hover:bg-green-600 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-create-modal">
+      追加
+    </button>
+  </div>
+</div>
+
+<!-- 編集modalの定義。 -->
+<% @applicant_line_templates.each do |applicant_line_template| %>
+  <%= form_with(model: applicant_line_template, url: "/applicant_line_templates/#{applicant_line_template.id}", method: :patch, local: true) do |form| %>
+    <div id="hs-update-modal-<%= applicant_line_template.id %>" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+      <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-[50rem] sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+        <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+          <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+            <%= form.submit "更新", onClick: "return check('更新しますか？','update-applicant-line-template-#{applicant_line_template.id}')", class: "py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none", id: "update-applicant-line-template-#{applicant_line_template.id}" %>
+            <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#hs-update-modal-<%= applicant_line_template.id %>">
+              <span class="sr-only">Close</span>
+              <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18"></path>
+                <path d="m6 6 12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="p-4">
+            <h3 class="mb-4">
+              テンプレート名
+            </h3>
+            <%= form.text_field :line_template_name, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+            <h3 class="mb-4">
+              店舗グループ
+            </h3>
+            <%= form.collection_select :store_group_id, StoreGroup.all_by_user(session[:user_id]), :id, :name, {}, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+            <div class="mt-3">
+              <div id="line-template-<%= applicant_line_template.id %>" role="tabpanel" aria-labelledby="line-template-<%= applicant_line_template.id %>">
+                <%= render "shared/line_template_rules", id: applicant_line_template.id %>
+                <div class="flex justify-center gap-x-2 py-3 px-4 border-t dark:border-gray-700">
+                  <%= form.text_area :line_template_body, rows: 10, id: "applicant_line_template_line_template_body_" + applicant_line_template.id.to_s, class: "py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+
+<!-- 追加modalの定義。 -->
+<%= form_with(model: @new_applicant_line_template, url: applicant_line_templates_path, local: true) do |form| %>
+  <div id="hs-create-modal" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-[50rem] sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+      <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+        <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+          <%= form.submit "追加", onClick: "return check('追加しますか？','create-applicant-line-template')", class: "py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none", id: "create-applicant-line-template" %>
+          <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay-close="#hs-create-modal">
+            <span class="sr-only">Close</span>
+            <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 6 6 18"></path>
+              <path d="m6 6 12 12"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="p-4">
+          <h3 class="mb-4">
+            テンプレート名
+          </h3>
+          <%= form.text_field :line_template_name, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+          <h3 class="mb-4">
+            店舗グループ
+          </h3>
+          <%= form.collection_select :store_group_id, StoreGroup.all_by_user(session[:user_id]), :id, :name, {}, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+          <%= form.hidden_field :line_template_body, class: "py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600", readonly: true %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

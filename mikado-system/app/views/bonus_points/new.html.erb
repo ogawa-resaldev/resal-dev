@@ -1,0 +1,188 @@
+<div class="mt-7 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="p-4 sm:p-7">
+    <div class="text-center">
+      <h1 class="block text-2xl font-bold text-gray-800 dark:text-white">ボーナスポイント(一度に10件まで登録可能)</h1>
+    </div>
+
+    <%= form_with(model: @bonus_point_collection, url: bonus_points_path, local: true) do |f| %>
+      <div class="table border-collapse table-auto w-full divide-y divide-gray-200 dark:divide-neutral-700">
+        <div class="table-header-group">
+          <div class="table-row">
+            <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">店舗グループ</div>
+            <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">発生日<br />セラピスト</div>
+            <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">
+              ボーナス
+              <div id="bonus_point_bonus_radio" class="grid grid-cols-2">
+                <div class="flex">
+                  <input type="radio" name="hs-default-radio" value="select" class="shrink-0 mt-0.5 border-gray-200 rounded-full text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" checked="">
+                  <label for="hs-checked-radio" class="text-sm text-gray-500 ms-2 dark:text-neutral-400">選択</label>
+                </div>
+                <div class="flex">
+                  <input type="radio" name="hs-default-radio" value="input" class="shrink-0 mt-0.5 border-gray-200 rounded-full text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800">
+                  <label for="hs-checked-radio" class="text-sm text-gray-500 ms-2 dark:text-neutral-400">直接入力</label>
+                </div>
+              </div>
+            </div>
+            <div class="table-cell px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">通常ポイント<br />応援ポイント</div>
+          </div>
+        </div>
+        <div class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+            <%= f.collection_select :store_group_id, StoreGroup.all_by_user(session[:user_id]), :id, :name, {}, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+          </div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+            <input type="date" id="bonus_point_occurence_date_default" class="py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" />
+            <div id="therapist-autocomplete"></div>
+          </div>
+          <div id="bonus_point_bonus_default" class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+            <div id="bonus_point_bonus_default_select">
+              <select id="bonus_point_default" class="py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" >
+                <% @bonus_point_select.each do |bonus_point| %>
+                  <option data-details=<%= bonus_point[1] %>>
+                    <%= bonus_point[0] %>
+                  </option>
+                <% end %>
+              </select>
+              <select id="bonus_point_detail_default" class="py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" >
+                <% @bonus_point_detail_initial_select.each do |bonus_point_detail_initial_select| %>
+                  <option data-point=<%= bonus_point_detail_initial_select[1][:data][:point] %> data-support_point=<%= bonus_point_detail_initial_select[1][:data][:support_point] %>>
+                    <%= bonus_point_detail_initial_select[0] %>
+                  </option>
+                <% end %>
+              </select>
+            </div>
+            <input type="text" id="bonus_point_bonus_default_input" class="py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" hidden="false" />
+          </div>
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+            <input type="text" id="bonus_point_point_default" value=<%= @bonus_point_initial_point %> class="py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" />
+            <br />
+            <input type="text" id="bonus_point_support_point_default" value=<%= @bonus_point_initial_support_point %> class="py-3 px-4 pe-9 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" />
+          </div>
+          <div class="inline-block align-middle">
+            <button type="button" onClick="addPoint()" class="py-1 px-2 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+              ポイント追加
+            </button>
+          </div>
+        </div>
+        <div id="bonus_points" class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+          <%= f.fields_for :bonus_points do |bonus_point| %>
+            <%= render 'bonus_point_fields', f: bonus_point %>
+          <% end %>
+        </div>
+        <div class="table-row-group divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+          <div class="table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">
+            <button type="submit", onClick="return check('ポイント発行しますか？','create-bonus-point')" id:"create-bonus-point", class="py-3 px-4 inline-flex justify-start items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+              ポイント発行
+            </button>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<%= javascript_include_tag('therapist_autocomplete') %>
+
+<script>
+  // セラピスト名の自動補完
+  createTherapistAutocomplete()
+  updateTherapistAutocompleteList(`<%= @therapist_autocomplete %>`)
+
+
+  // collectionを全て非表示にする
+  bonusPoints = document.getElementById("bonus_points")
+  Array.from(bonusPoints.children).forEach(function (bonus_point) {
+    if (bonus_point.children[1].children[3].value == "") {
+      // registerが""ならば、初期状態なので隠す。
+      bonus_point.classList.add("hidden")
+    }
+  })
+
+
+  // ボーナスの選択、直接入力の選択
+  bonusPointBonusDefaultSelect = document.getElementById("bonus_point_bonus_default_select")
+  bonusPointBonusDefaultInput = document.getElementById("bonus_point_bonus_default_input")
+  document.getElementsByName("hs-default-radio").forEach(function (radio) {
+    radio.addEventListener('change', function (event) {
+      if (event.target.value == "select") {
+        bonusPointBonusDefaultSelect.hidden = false
+        bonusPointBonusDefaultInput.hidden = true
+
+        bonusPointDefault.dispatchEvent(new Event('change'))
+      } else {
+        bonusPointBonusDefaultSelect.hidden = true
+        bonusPointBonusDefaultInput.hidden = false
+
+        bonusPointPointDefault.value = 0
+        bonusPointSupportPointDefault.value = 0
+      }
+    })
+  })
+
+
+  // ポイントの選択
+  bonusPointDefault = document.getElementById("bonus_point_default")
+  bonusPointDetailDefault = document.getElementById("bonus_point_detail_default")
+  bonusPointPointDefault = document.getElementById("bonus_point_point_default")
+  bonusPointSupportPointDefault = document.getElementById("bonus_point_support_point_default")
+  bonusPointDefault.addEventListener('change', function (event) {
+    bonusPointDetailDefault.innerHTML = '';
+    JSON.parse(bonusPointDefault.selectedOptions[0].dataset.details).forEach(function(option,index){
+      var op = document.createElement('option');
+      op.text = option[0]
+      op.dataset.point = option[1]["data"]["point"]
+      op.dataset.support_point = option[1]["data"]["support_point"]
+      bonusPointDetailDefault.appendChild(op);
+      // ポイントの設定
+      if (index == 0){
+        bonusPointPointDefault.value = option[1]["data"]["point"]
+        bonusPointSupportPointDefault.value = option[1]["data"]["support_point"]
+      }
+    })
+  })
+
+
+  // ポイント詳細の選択
+  bonusPointDetailDefault.addEventListener('change', function (event) {
+    bonusPointPointDefault.value = bonusPointDetailDefault.selectedOptions[0].dataset.point
+    bonusPointSupportPointDefault.value = bonusPointDetailDefault.selectedOptions[0].dataset.support_point
+  })
+
+
+  // ポイント追加の押下
+  function addPoint() {
+    bonusPointStoreGroupDefault = document.getElementById("form_bonus_point_collection_store_group_id")
+    bonusPointOccurenceDateDefault = document.getElementById("bonus_point_occurence_date_default")
+    therapistAutocomplete = document.getElementById("therapist-autocomplete")
+    Array.from(bonusPoints.children).every(function (bonusPoint) {
+      if (bonusPoint.classList.contains("hidden")) {
+        bonusPoint.classList.remove("hidden")
+        bonusPoint.children[0].children[0].value = bonusPointStoreGroupDefault.value
+        bonusPoint.children[0].children[1].value = bonusPointStoreGroupDefault.selectedOptions[0].innerText
+
+        bonusPoint.children[1].children[0].value = therapistAutocomplete.children[1].value
+        bonusPoint.children[1].children[1].value = bonusPointOccurenceDateDefault.value
+        // registerは、セラピストの名前で埋める。
+        bonusPoint.children[1].children[3].value = therapistAutocomplete.children[0].value
+
+        document.getElementsByName("hs-default-radio").forEach(function (radio) {
+          if (radio.checked) {
+            if (radio.value == "select") {
+              bonus = bonusPointBonusDefaultSelect.children[0].selectedOptions[0].text + " (" + bonusPointBonusDefaultSelect.children[1].selectedOptions[0].text + ")"
+              bonusPoint.children[2].children[0].value = bonus
+            } else {
+              bonusPoint.children[2].children[0].value = bonusPointBonusDefaultInput.value
+            }
+          }
+        })
+
+        bonusPoint.children[3].children[0].value = bonusPointPointDefault.value
+        bonusPoint.children[3].children[2].value = bonusPointSupportPointDefault.value
+
+        return false
+      } else {
+        return true
+      }
+    })
+  }
+</script>

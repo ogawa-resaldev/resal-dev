@@ -1,0 +1,104 @@
+<div class="flex flex-col">
+  <!-- 絞り込み -->
+  <div class="py-3 px-4">
+    <%= form_with(url: bonus_points_path, method: :get, local: true) do |form| %>
+      <div class="flex space-x-4 items-center">
+        セラピスト<br />
+        <div id="therapist-autocomplete"></div>
+      </div>
+      <div class="flex space-x-4 items-center">
+        <div>
+          期間<br />
+          <%= form.date_field :bonus_datetime_from, class:"py-3 px-4 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+        </div>
+        <div>
+          <br />
+          〜
+        </div>
+        <div>
+          <br />
+          <%= form.date_field :bonus_datetime_to, class:"py-3 px-4 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+        </div>
+        <%= form.submit '適用', id: 'apply', class: 'py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none' %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="-m-1.5 overflow-x-auto">
+    <div class="p-1.5 min-w-full inline-block align-middle">
+      <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+        <div class="overflow-hidden">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">店舗グループ</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">発生日</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">セラピスト</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">ボーナス</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                  通常ポイント
+                  <br />
+                  応援ポイント
+                </th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">削除</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+              <% @bonus_points.each do |bonus_point| %>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                  <%= bonus_point.store_group.name %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                  <%= l bonus_point[:occurrence_date], format: :date %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                  <%= bonus_point.user.name %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                  <%= bonus_point[:bonus] %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                  <%= bonus_point[:point] %>
+                  <br />
+                  <%= bonus_point[:support_point] %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                  <%= button_to '削除', bonus_points_path + '/' + bonus_point[:id].to_s, { method: :delete, form: { onSubmit: "return check('次のボーナスポイントを削除しますか？：" + bonus_point[:bonus] + "','')" }, class:"py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:pointer-events-none" } %>
+                </td>
+              </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%= javascript_include_tag('therapist_autocomplete') %>
+
+<script>
+  // セラピスト名の自動補完
+  createTherapistAutocomplete()
+
+
+  // 検索パラメータの再設定
+  const params = new URLSearchParams(document.location.search)
+  // もし検索パラメータがなかったら、最初のアクセスなので期間を設定。
+  if (params.toString() == "") {
+    let today = new Date()
+    // sv-SEロケール(スウェーデン)はYYYY-MM-DD形式の日付文字列を戻す。
+    document.getElementById("bonus_datetime_from").value = (new Date(today.getFullYear(), today.getMonth() - 1, 26)).toLocaleDateString('sv-SE')
+    document.getElementById("bonus_datetime_to").value = (new Date(today.getFullYear(), today.getMonth(), 25)).toLocaleDateString('sv-SE')
+  }
+  params.forEach((param,key)=>{
+    if (key != "commit") {
+      document.getElementById(key).value = params.get(key)
+    }
+  })
+
+
+  // セラピスト名の自動補完リストを更新。補完のため、検索セラピストの再設定後に実行。
+  updateTherapistAutocompleteList(`<%= @therapist_autocomplete %>`)
+</script>

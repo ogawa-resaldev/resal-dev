@@ -1,0 +1,84 @@
+<div class="flex flex-col">
+  <!-- 絞り込み -->
+  <div class="py-3 px-4">
+    <%= form_with(url: sales_path, method: :get, local: true) do |form| %>
+      <div class="flex space-x-4 items-center">
+        <div>
+          期間<br />
+          <%= form.date_field :sale_datetime_from, class:"py-3 px-4 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+        </div>
+        <div>
+          <br />
+          〜
+        </div>
+        <div>
+          <br />
+          <%= form.date_field :sale_datetime_to, class:"py-3 px-4 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" %>
+        </div>
+        <div>
+          束ね方<br />
+          <%= form.select :grouping, @grouping_select, {}, {class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"} %>
+        </div>
+        <%= form.submit '集計', id: 'apply', class: 'py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none' %>
+      </div>
+    <% end %>
+  </div>
+
+  <% if @sales.count != 0 %>
+    <div class="-m-1.5 overflow-x-auto">
+      <div class="p-1.5 min-w-full inline-block align-middle">
+        <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+          <div class="overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <% @sale_columns.each do |sale_column| %>
+                    <% if sale_column[1] == "amount" %>
+                      <th scope="col" class="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase">
+                    <% else %>
+                      <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                    <% end %>
+                        <%= sale_column[0] %>
+                      </th>
+                  <% end %>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                <% @sales.each do |sale| %>
+                  <tr>
+                    <% @sale_columns.each_with_index do |sale_column, index| %>
+                      <% if sale_column[1] == "amount" %>
+                        <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+                      <% else %>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                      <% end %>
+                          <%= number_format(sale[index]) %>
+                        </td>
+                    <% end %>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<script>
+  // 検索パラメータの再設定
+  const params = new URLSearchParams(document.location.search)
+  // もし検索パラメータがなかったら、最初のアクセスなので期間を定義。
+  if (params.toString() == "") {
+    let today = new Date()
+    // sv-SEロケール(スウェーデン)はYYYY-MM-DD形式の日付文字列を戻す。
+    document.getElementById("sale_datetime_from").value = (new Date(today.getFullYear(), today.getMonth() - 1, 1)).toLocaleDateString('sv-SE')
+    document.getElementById("sale_datetime_to").value = (new Date(today.getFullYear(), today.getMonth(), 0)).toLocaleDateString('sv-SE')
+  }
+  params.forEach((param,key)=>{
+    if (key != "commit") {
+      document.getElementById(key).value = params.get(key)
+    }
+  })
+</script>

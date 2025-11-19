@@ -1,0 +1,68 @@
+<h3 class="font-bold text-gray-800 dark:text-white">
+  通過区分
+</h3>
+<%= f.collection_select :pass_classification_id,
+    PassClassification.all_by_store(@applicant.applicant_detail.preferred_store_id).map { |pc|
+      [pc.classification_name, pc.id, { data: {
+        mailTemplateSubject: pc.mail_template_subject,
+        mailTemplateBody: pc.mail_template_body,
+        fees: pc.pass_classification_fees.map { |f|
+          { fee_name: f.fee_name, amount: f.amount, annotation: f.annotation }
+        }.to_json
+      }}]
+    },
+    :second,
+    :first,
+    {},
+    class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" %>
+<h3 class="font-bold text-gray-800 dark:text-white">
+  費用
+</h3>
+<div class="w-1/2">
+  <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+    <thead class="bg-gray-50 dark:bg-gray-700">
+      <tr>
+        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">内容</th>
+        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">金額</th>
+        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">注釈</th>
+      </tr>
+    </thead>
+    <tbody id="pass-classification-fee-tbody" class="divide-y divide-gray-200 dark:divide-gray-700">
+      <tr>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  const applicantPassClassificationId = document.getElementById('applicant_pass_classification_id');
+  const passClassificationFeeTbody = document.getElementById('pass-classification-fee-tbody');
+
+
+  // idを引数にして、tbodyを描画
+  function updatePassClassificationFeeTbody() {
+    passClassificationFeeTbody.innerHTML = '';
+    JSON.parse(applicantPassClassificationId.selectedOptions[0].dataset.fees).forEach((fee)=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="px-6 py-4 text-center text-sm text-gray-800 dark:text-gray-200">${fee.fee_name}</td>
+        <td class="px-6 py-4 text-center text-sm text-gray-800 dark:text-gray-200">${fee.amount}</td>
+        <td class="px-6 py-4 text-center text-sm text-gray-800 dark:text-gray-200">${fee.annotation}</td>
+      `;
+      passClassificationFeeTbody.appendChild(tr);
+    })
+  }
+
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // 初期値を描画
+    if (applicantPassClassificationId.value != '') {
+      updatePassClassificationFeeTbody()
+    }
+
+    // 通過区分変更の際、tbodyを更新
+    applicantPassClassificationId.addEventListener('change', function() {
+      updatePassClassificationFeeTbody()
+    });
+  });
+</script>

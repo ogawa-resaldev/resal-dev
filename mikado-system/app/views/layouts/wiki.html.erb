@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<html>
+  <head>
+    <%# クロスサイトリクエストフォージェリ対策 %>
+    <%= csrf_meta_tags %>
+    <%# CSPの記述 %>
+    <%= csp_meta_tag %>
+    <%# 以下がないと、解像度でレスポンシブ判定するので困る %>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+  </head>
+  <body>
+    <header>
+      <h1>
+        Resal説明書
+        <br />
+        <a href="/home" align=”right”>
+          システムに戻る
+        </a>
+      </h1>
+    </header>
+    <%= yield %>
+    <p id="top-btn"><a href="#" class="fa fa-angle-up">TOP</a></p>
+  </body>
+</html>
+
+<script>
+  const btn = document.getElementById("top-btn");
+
+  btn.style.position = "fixed";
+  btn.style.bottom = "3vw";
+  btn.style.right = "3vw";
+  btn.style.fontSize = "3vw";
+
+  btn.children[0].style.background = "#ab101b";
+  btn.children[0].style.textDecoration = "none";
+  btn.children[0].style.color = "#fff";
+  btn.children[0].style.width = "10vw";
+  btn.children[0].style.padding = "2vw 2vw";
+  btn.children[0].style.textAlign = "center";
+  btn.children[0].style.display = "block";
+  btn.children[0].style.borderRadius = "10vw";
+  btn.children[0].style.opacity = "0.9";
+  btn.children[0].style.transition = "all .3s ease";
+
+  btn.addEventListener("click", () => {
+    window.scroll({
+      top: 0,
+      behavior: "smooth",
+    });
+  });
+</script>

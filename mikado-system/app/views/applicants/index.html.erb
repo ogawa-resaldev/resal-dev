@@ -1,0 +1,471 @@
+<div class="flex flex-col">
+  <!-- 絞り込み -->
+  <div class="py-3 px-4">
+    <%= form_with(url: applicants_path, method: :get, local: true, id: "filter") do |form| %>
+      <div class="sm:flex items-center">
+        <div class="flex py-2 sm:px-2">
+          <div>
+            店舗グループ<br />
+            <%= form.collection_select :store_group_id, StoreGroup.all_by_user(session[:user_id]), :id, :name, {include_blank: true}, class: "py-3 px-4 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" %>
+          </div>
+        </div>
+        <div class="py-2 sm:px-2">
+          ステータス<br />
+          <% ApplicantStatus.all.each do |applicant_status| %>
+            <label class="mr-3">
+              <input
+                type="checkbox"
+                class="status-check"
+                value="<%= 2**(applicant_status.id - 1) %>"
+              >
+              <%= applicant_status.status_name %>
+            </label>
+          <% end %>
+          <%= form.hidden_field :sum_status_bits, id: "sum_status_bits" %>
+        </div>
+        <%= form.submit '絞り込み', id: 'apply', class: 'py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none' %>
+      </div>
+    <% end %>
+  </div>
+  <div class="overflow-x-auto">
+    <div class="min-w-full align-middle">
+      <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">応募者氏名</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">応募日</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">希望の所属店舗</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">面接</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">ステータス</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">状況共有メモ</th>
+                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">詳細</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+              <% @applicants.each do |applicant| %>
+              <% if applicant.pending_flag %>
+                <tr class="bg-gray-50" >
+              <% else%>
+                <tr>
+              <% end %>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                  <%= applicant.applicant_detail.name %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                  <%= l applicant.applicant_detail.application_date, format: :date %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                  <%= applicant.applicant_detail.preferred_store.store_name %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                  <% if applicant.interview_datetime.present? %>
+                    面接日時：<%= l applicant.interview_datetime, format: :default  %>
+                  <% end %>
+                  <br>
+                  <% if applicant.interviewer.present? %>
+                    面接担当者：<%= applicant.interviewer.name %>
+                  <% end %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                  <% if applicant.pending_flag %>
+                    保留中
+                    <br/>
+                    (<%= applicant.applicant_status.status_name %>)
+                  <% else%>
+                    <%= applicant.applicant_status.status_name %>
+                  <% end %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-center text-sm font-medium">
+                  <% if applicant.note.present? %>
+                    <button type="button" class="py-2 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#note-modal-<%= applicant.id %>">
+                      メモ有
+                    </button>
+                  <% end %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-center text-sm font-medium">
+                  <button type="button" class="py-2 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" data-hs-overlay="#hs-vertically-centered-modal-<%= applicant.id %>">
+                    表示
+                  </button>
+                </td>
+              </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 状況共有メモmodalの定義。 -->
+<% @applicants.each do |applicant| %>
+  <% if applicant.note.present? %>
+  <div id="note-modal-<%= applicant.id %>" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+      <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+        <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+          <h3 class="font-bold text-gray-800 dark:text-white">
+            応募者ID：<%= applicant.id %>
+          </h3>
+          <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay="#note-modal-<%= applicant.id %>">
+            <span class="sr-only">Close</span>
+            <svg class="flex-shrink-0 size-8" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 6 6 18"></path>
+              <path d="m6 6 12 12"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="overflow-x-hidden" style="height:70vh;">
+          <div class="p-4 overflow-y-auto">
+            <%= simple_format(applicant.note.gsub("\r\n", "<br />"))%>
+          </div>
+        </div>
+        <div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-neutral-700">
+          <button type="button" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700" data-hs-overlay="#note-modal-<%= applicant.id %>">
+            閉じる
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <% end %>
+<% end %>
+
+<!-- 詳細modalの定義。 -->
+<% @applicants.each do |applicant| %>
+<div id="hs-vertically-centered-modal-<%= applicant.id %>" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+  <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-3.5rem)] flex items-center">
+    <div class="w-full flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7] modal-content">
+      <div class="flex justify-between items-center py-3 px-4 border-b dark:border-gray-700">
+        <h3 class="font-bold text-gray-800 dark:text-white">
+          応募者ID：<%= applicant.id %>
+          <% if applicant.pending_flag %>
+            <br />
+            ※保留中
+            <%= form_with(model: applicant, url: update_pending_flag_applicant_path(applicant), method: :patch, local: true) do |form| %>
+              <%= form.submit "解除", onClick: "return check('保留を解除しますか？','update-pending-flag-" + applicant.id.to_s + "')", class: "py-1 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none",id:"update-pending-flag-" + applicant.id.to_s %>
+            <% end %>
+          <% else %>
+            <%= form_with(model: applicant, url: update_pending_flag_applicant_path(applicant), method: :patch, local: true) do |form| %>
+              <%= form.submit "保留にする", onClick: "return check('保留にしますか？','update-pending-flag-" + applicant.id.to_s + "')", class: "py-1 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none",id:"update-pending-flag-" + applicant.id.to_s %>
+            <% end %>
+          <% end %>
+        </h3>
+        <% if session[:user_role_id] != 1 %>
+          <a href="/applicants/<%= applicant.id %>/edit" target="_blank" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none">
+            編集
+          </a>
+          <%= button_to '削除', applicants_path + '/' + applicant.id.to_s, { method: :delete, form: { onSubmit: "return check('応募者を削除しますか？：" + applicant.applicant_detail.name + "','')" }, class:"py-2 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:pointer-events-none" } %>
+        <% end %>
+        <button type="button" class="flex justify-center items-center size-7 text-sm font-semibold rounded-full border border-transparent text-gray-800 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:text-white dark:hover:bg-gray-700" data-hs-overlay="#hs-vertically-centered-modal-<%= applicant.id %>">
+          <span class="sr-only">Close</span>
+          <svg class="flex-shrink-0 size-8" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="overflow-x-hidden" style="height:70vh;">
+        <!-- Tabs -->
+        <div class="border-b border-gray-200 dark:border-gray-700">
+          <nav class="flex space-x-2 px-4" aria-label="Tabs" role="tablist">
+            <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none active" id="basic-info-tab-<%= applicant.id %>" data-hs-tab="#basic-info-<%= applicant.id %>" aria-controls="basic-info-<%= applicant.id %>" role="tab">
+              基本情報
+            </button>
+            <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none" id="photos-tab-<%= applicant.id %>" data-hs-tab="#photos-<%= applicant.id %>" aria-controls="photos-<%= applicant.id %>" role="tab">
+              写真
+            </button>
+            <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none" id="selection-info-tab-<%= applicant.id %>" data-hs-tab="#selection-info-<%= applicant.id %>" aria-controls="selection-info-<%= applicant.id %>" role="tab">
+              選考情報
+            </button>
+          </nav>
+        </div>
+
+        <!-- Tab Content -->
+        <div>
+          <!-- 基本情報 -->
+          <div id="basic-info-<%= applicant.id %>" role="tabpanel" aria-labelledby="basic-info-tab-<%= applicant.id %>">
+            <div class="p-4 overflow-y-auto">
+              <p class="text-gray-800 dark:text-gray-400">
+                【メールアドレス】<%= applicant.applicant_detail.mail_address %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                【お名前】<%= applicant.applicant_detail.name %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                【電話番号】<%= applicant.applicant_detail.tel %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                【年齢】<%= applicant.applicant_detail.age %>歳
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                【身長】<%= applicant.applicant_detail.height %>cm
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                【体重】<%= applicant.applicant_detail.weight %>kg
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                【最寄駅】<%= applicant.applicant_detail.nearest_station %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                【学歴】<%= applicant.applicant_detail.education %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                【職業】<%= applicant.applicant_detail.occupation %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                【出勤頻度】<%= applicant.applicant_detail.work_frequency %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                【経験人数】<%= applicant.applicant_detail.experience_count %>人
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                【喫煙】<%= applicant.applicant_detail.smoking %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                【タトゥーの有無】<%= applicant.applicant_detail.has_tattoo %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                【セラピスト経験・期間】<%= applicant.applicant_detail.therapist_experience %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                【モザイク】<%= applicant.applicant_detail.mosaic %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                【当店をどこで知りましたか？】<%= applicant.applicant_detail.how_to_know %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                【希望の所属店舗】<%= Store.find(applicant.applicant_detail.preferred_store_id).store_name %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                【志望動機】<br /><%= applicant.applicant_detail.motivation %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                【自己アピール】<br /><%= applicant.applicant_detail.self_pr %>
+              </p>
+              <p class="text-gray-800 dark:text-gray-400">
+                【その他、ご質問等】<br /><%= applicant.applicant_detail.other_questions %>
+              </p>
+            </div>
+          </div>
+
+          <!-- 写真 -->
+          <div id="photos-<%= applicant.id %>" class="hidden" role="tabpanel" aria-labelledby="photos-tab-<%= applicant.id %>">
+            <div class="p-4 overflow-y-auto">
+              <label class="block text-sm mb-2 dark:text-white">写真1</label>
+              <div class="grid grid-cols-2 gap-4">
+                <% if applicant.applicant_detail.image_one_path %>
+                  <div class="aspect-w-1 aspect-h-1">
+                    <%= image_tag applicant.applicant_detail.image_one_path, class: "object-cover rounded-lg" %>
+                  </div>
+                <% else %>
+                  <p class="text-gray-500 dark:text-gray-400 col-span-2 text-center py-4">写真がアップロードされていません</p>
+                <% end %>
+              </div>
+              <label class="block text-sm mb-2 dark:text-white">写真2</label>
+              <div class="grid grid-cols-2 gap-4">
+                <% if applicant.applicant_detail.image_two_path %>
+                  <div class="aspect-w-1 aspect-h-1">
+                    <%= image_tag applicant.applicant_detail.image_two_path, class: "object-cover rounded-lg" %>
+                  </div>
+                <% else %>
+                  <p class="text-gray-500 dark:text-gray-400 col-span-2 text-center py-4">写真がアップロードされていません</p>
+                <% end %>
+              </div>
+            </div>
+          </div>
+
+          <!-- 選考情報 -->
+          <div id="selection-info-<%= applicant.id %>" class="hidden" role="tabpanel" aria-labelledby="selection-info-tab-<%= applicant.id %>">
+            <div class="p-4 overflow-y-auto">
+              <h3 class="font-bold text-gray-800 dark:text-white">
+                ステータス
+              </h3>
+              <%= applicant.applicant_status.status_name %>
+              <% if applicant.applicant_status_id <= 5 %>
+                <div class="max-w-100 flex items-center gap-x-1">
+                  <% ApplicantStatus.where(id: ...6).each do |status| %>
+                    <% if status.id <= applicant.applicant_status_id %>
+                      <div class="w-full flex flex-col justify-center overflow-hidden bg-blue-600 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-blue-500" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">
+                        <%= status.status_name %>
+                      </div>
+                    <% else %>
+                      <div class="w-full flex flex-col justify-center overflow-hidden bg-gray-300 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-neutral-600" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">
+                        <%= status.status_name %>
+                      </div>
+                    <% end %>
+                  <% end %>
+                </div>
+              <% elsif applicant.applicant_status_id == 6 %>
+                <div class="w-full flex flex-col justify-center overflow-hidden bg-blue-600 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-blue-500" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">
+                  <%= applicant.applicant_status.status_name %>
+                </div>
+              <% else %>
+                <div class="w-full flex flex-col justify-center overflow-hidden bg-red-500 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-blue-500" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">
+                  <%= applicant.applicant_status.status_name %>
+                </div>
+              <% end %>
+              <br />
+              <% if applicant.applicant_status_id >= 3 %>
+                <h3 class="font-bold text-gray-800 dark:text-white">
+                  源氏名
+                </h3>
+                <div>
+                  <% if applicant.professional_name.present? %>
+                    <%= applicant.professional_name %>
+                  <% end %>
+                </div>
+                <div>
+                  <% if applicant.interviewer.present? %>
+                    面接担当者：<%= applicant.interviewer.name %>
+                  <% end %>
+                </div>
+              <% end %>
+              <% if applicant.applicant_status_id >= 2 %>
+                <br />
+                <h3 class="font-bold text-gray-800 dark:text-white">
+                  通過区分
+                </h3>
+                <div>
+                  <% if applicant.pass_classification.present? %>
+                    <%= applicant.pass_classification %>
+                  <% end %>
+                </div>
+                <br />
+                <h3 class="font-bold text-gray-800 dark:text-white">
+                  費用
+                </h3>
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                      <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">内容</th>
+                      <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">金額</th>
+                      <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">受け取り日</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <% applicant.applicant_fees.each do |applicant_fee| %>
+                      <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                          <%= applicant_fee.fee_name %>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                          <%= applicant_fee.amount %>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
+                          <% if applicant_fee.receive_date.present? %>
+                            <%= l applicant_fee.receive_date, format: :date %>
+                          <% else %>
+                            未受け取り
+                          <% end %>
+                        </td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              <% end %>
+              <br />
+              <% if applicant.applicant_status_id >= 3 %>
+                <h3 class="font-bold text-gray-800 dark:text-white">
+                  面接
+                </h3>
+                <div>
+                  <% if applicant.interview_datetime.present? %>
+                    面接日時：<%= l applicant.interview_datetime, format: :default %>
+                  <% end %>
+                </div>
+                <div>
+                  <% if applicant.interviewer.present? %>
+                    面接担当者：<%= applicant.interviewer.name %>
+                  <% end %>
+                </div>
+              <% end %>
+              <br />
+              <% if applicant.applicant_status_id >= 4 %>
+                <h3 class="font-bold text-gray-800 dark:text-white">
+                  研修(<%= applicant.training_adjustment %>)
+                </h3>
+                <div>
+                  <% if applicant.training_datetime.present? %>
+                    研修日時：<%= l applicant.training_datetime, format: :default %>
+                  <% end %>
+                </div>
+                <div>
+                  <% if applicant.instructor.present? %>
+                    担当講師：<%= applicant.instructor %>
+                  <% end %>
+                </div>
+                <br />
+                <h3 class="font-bold text-gray-800 dark:text-white">
+                  撮影(<%= applicant.shooting_adjustment %>)
+                </h3>
+                <div>
+                  <% if applicant.shooting_datetime.present? %>
+                    撮影日時：<%= l applicant.shooting_datetime, format: :default %>
+                  <% end %>
+                </div>
+                <div>
+                  <% if applicant.photographer_studio.present? %>
+                    カメラマン・スタジオ：<%= applicant.photographer_studio %>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end items-center gap-x-2 py-3 px-4 border-t dark:border-neutral-700">
+        <button type="button" class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700" data-hs-overlay="#hs-vertically-centered-modal-<%= applicant.id %>">
+          閉じる
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<% end %>
+
+<script>
+  // 各チェック項目のlistenerを定義。
+  const statusChecks = document.querySelectorAll(".status-check")
+  statusChecks.forEach((check) => {
+    check.addEventListener('change', function() {
+      updateSumStatusBits();
+    });
+  })
+  // 検索パラメータの再設定
+  searchParams = new URLSearchParams(document.location.search)
+  // もし検索パラメータがなかったら、最初のアクセスなのでデビュー待ちまでをチェック。
+  if (searchParams.toString() == "") {
+    restoreCheckboxesFromBits(31)
+    updateSumStatusBits()
+  }
+  searchParams.forEach((param,key)=>{
+    if (key == "sum_status_bits") {
+      restoreCheckboxesFromBits(searchParams.get(key))
+    } else if (key != "commit") {
+      document.getElementById(key).value = searchParams.get(key)
+    }
+  })
+
+
+  // チェックされているステータスに合わせて、submit用パラメータを更新。
+  function updateSumStatusBits() {
+    let sum = 0;
+    statusChecks.forEach((check) => {
+      if (check.checked) {
+        sum += parseInt(check.value);
+      }
+    });
+    document.getElementById("sum_status_bits").value = sum;
+  }
+
+
+  // URLパラメータおよび初期値から、チェックをつけなおす。
+  function restoreCheckboxesFromBits(bits) {
+    statusChecks.forEach(check => {
+      check.checked = (bits & parseInt(check.value)) > 0;
+    });
+  }
+</script>

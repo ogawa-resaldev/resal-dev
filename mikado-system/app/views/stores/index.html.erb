@@ -1,0 +1,51 @@
+<div class="flex flex-col">
+  <div class="overflow-x-auto">
+    <div class="min-w-full align-middle">
+      <div class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+        <div class="tabs">
+          <div class="border-b border-gray-200 dark:border-neutral-700">
+            <nav class="flex space-x-1 overflow-x-auto" aria-label="Tabs" role="tablist">
+              <% role_tabs = @stores.sort_by(&:store_group_id).group_by(&:store_group_id) %>
+              <% role_tabs.keys.each_with_index do |group_id, index| %>
+                <button type="button" class="hs-tab-active:font-semibold hs-tab-active:border-blue-600 hs-tab-active:text-blue-600 py-4 px-1 inline-flex items-center gap-x-2 border-b-2 border-transparent text-sm whitespace-nowrap text-gray-500 hover:text-blue-600 focus:outline-none focus:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-blue-500 <%= 'active' if index == 0 %>" id="tabs-with-underline-item-<%= group_id %>" data-hs-tab="#tabs-with-underline-<%= group_id %>" aria-controls="tabs-with-underline-<%= group_id %>" role="tab">
+                  <%= @store_group_list[group_id] %>
+                </button>
+              <% end %>
+            </nav>
+          </div>
+        </div>
+
+        <div class="mt-3">
+          <% role_tabs.each_with_index do |(group_id, stores), index| %>
+            <div id="tabs-with-underline-<%= group_id %>" class="<%= 'hidden' unless index == 0 %>" role="tabpanel" aria-labelledby="tabs-with-underline-item-<%= group_id %>">
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                      <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">店舗名</th>
+                      <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">店舗URL</th>
+                      <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">編集</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <% stores.each do |store| %>
+                    <tr>
+                      <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200"><%= store.store_name %></td>
+                      <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200"><%= store.store_url %></td>
+                      <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                        <a class="py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none" href="/stores/<%= store.id %>/edit">
+                          編集
+                        </a>
+                      </td>
+                    </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
