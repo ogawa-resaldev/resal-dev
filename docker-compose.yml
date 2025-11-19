@@ -61,7 +61,7 @@ services:
       - webnet
     volumes:
       - ./docker/mysql1/data:/var/lib/mysql
-      - ./docker/mysql1/custom.cnf:/etc/mysql/conf.d/custom.cnf
+      - ./docker/mysql1/conf.d:/etc/mysql/conf.d
     environment:
       - MYSQL_ROOT_PASSWORD=5swB2ANBrs
       - MYSQL_DATABASE=first_db
@@ -98,7 +98,7 @@ services:
       - webnet
     volumes:
       - ./docker/mysql2/data:/var/lib/mysql
-      - ./docker/mysql2/custom.cnf:/etc/mysql/conf.d/custom.cnf
+      - ./docker/mysql2/conf.d:/etc/mysql/conf.d
     environment:
       - MYSQL_ROOT_PASSWORD=5swB2ANBrs
       - MYSQL_DATABASE=mikado_db

@@ -5,6 +5,13 @@ https://qiita.com/itkrt2y/items/32ad1512fce1bf90c20b
 - Ruby On RailsのActiveRecordなどの一部のORマッパーはこのポリモーフィック関連をサポートしている
 https://spice-factory.co.jp/development/has-and-belongs-to-many-table/
 
+# dev環境の追加
+- docker-compose.yml(docker-compose-local.yml)にwebとmysql(とphpmyadmin)を追加。
+- mysqlのportからのアクセスを許可。
+→conohaなら、セキュリティグループに追加。
+- docker配下に、新しいmysqlフォルダを作成。conf.dをコピペして配置。
+- サーバーのドメインリストに、Aレコードを追加。(反映に数時間～24時間かかる。)
+
 # https-portal
 暫定的なhttps対応のため入れている。
 ssl証明ができたら破棄したい。
