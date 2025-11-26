@@ -1,6 +1,7 @@
 module V1
   class Root < Grape::API
     helpers V1::Helpers::ApplicantHelper
+    helpers V1::Helpers::CalendarIntegrationHelper
     helpers V1::Helpers::LineTemplateHelper
     helpers V1::Helpers::MailTemplateHelper
     helpers V1::Helpers::ReservationHelper
@@ -13,6 +14,7 @@ module V1
     content_type :json, 'application/json;charset=UTF-8'
 
     mount V1::Applicants
+    mount V1::CalendarIntegrations
     mount V1::LineTemplates
     mount V1::MailTemplates
     mount V1::Reservations

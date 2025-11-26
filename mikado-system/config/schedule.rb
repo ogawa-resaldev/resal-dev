@@ -47,3 +47,23 @@ end
 every 1.days, at: '11:05 pm' do
   rake 'backup:backup'
 end
+
+# 毎週月曜3:05にscheduleのwatch設定と更新
+every :monday, at: '6:05 pm' do
+  rake 'integrate_google_calendar:watch'
+end
+
+# 毎週月曜3:15にscheduleのwatch設定と更新
+every :monday, at: '6:15 pm' do
+  rake 'integrate_google_calendar:bulk_update'
+end
+
+# 毎週木曜3:05にscheduleのwatch設定と更新
+every :thursday, at: '6:05 pm' do
+  rake 'integrate_google_calendar:watch'
+end
+
+# 毎週木曜3:15にscheduleのwatch設定と更新
+every :thursday, at: '6:15 pm' do
+  rake 'integrate_google_calendar:bulk_update'
+end

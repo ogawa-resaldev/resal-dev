@@ -5,9 +5,13 @@
 # docker配下
 docker/mysql1/data
 docker/mysql2/data
-docker/certs
+docker/nginx
 docker/fast-api/app/line-messages
+docker/fast-api/app/__pycache__
 
 # .env
 first-class/.env
 mikado-system/.env
+
+# service-account.json
+mikado-system/config/service-account.json

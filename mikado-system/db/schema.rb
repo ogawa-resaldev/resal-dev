@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_10_04_084251) do
+ActiveRecord::Schema[7.0].define(version: 2025_11_19_065053) do
   create_table "applicant_auto_notifications", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "store_group_id", null: false, comment: "店舗グループID"
     t.boolean "execute_flag", default: true, comment: "実行フラグ"
@@ -458,6 +458,8 @@ ActiveRecord::Schema[7.0].define(version: 2025_10_04_084251) do
     t.text "auto_complete", comment: "自動補完"
     t.string "mail_address", comment: "メールアドレス"
     t.text "account_information", comment: "口座情報"
+    t.boolean "integrate_google_calendar_flag", default: false, null: false, comment: "googleカレンダー連携フラグ"
+    t.string "google_calendar_sync_token", comment: "googleカレンダーのsyncToken"
     t.datetime "deleted_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
