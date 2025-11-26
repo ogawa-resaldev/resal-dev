@@ -7,6 +7,7 @@ docker/mysql1/data
 docker/mysql2/data
 docker/nginx
 docker/fast-api/app/line-messages
+docker/fast-api/app/__pycache__
 
 # .env
 first-class/.env
