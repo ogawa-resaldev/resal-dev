@@ -7,6 +7,11 @@ module V1
         require 'net/http'
         require 'json'
 
+        # user_therapist_setting_idがなければ処理を行わない。
+        if !params["user_therapist_setting_id"].present?
+          return
+        end
+
         user_therapist_setting = UserTherapistSetting.find(params["user_therapist_setting_id"])
 
         service = Google::Apis::CalendarV3::CalendarService.new
