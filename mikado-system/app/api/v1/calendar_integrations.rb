@@ -2,7 +2,7 @@ module V1
   class CalendarIntegrations < Grape::API
     resources :calendar_integrations do
       # googleカレンダーの更新時にここを叩くことで、word pressに更新を伝播させるためのapi
-      get '/propagate_google_calendar' do
+      post '/propagate_google_calendar' do
         begin
           propagateGoogleCalendar(params)
         rescue => e
