@@ -11,3 +11,6 @@ docker/fast-api/app/line-messages
 # .env
 first-class/.env
 mikado-system/.env
+
+# service-account.json
+mikado-system/config/service-account.json
