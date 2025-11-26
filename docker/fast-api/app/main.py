@@ -25,6 +25,55 @@ async def post_therapists(request: Request):
     }
     return response
 
+@app.get('/store/{store}/wp-json/wp/v2/casts')
+async def get_casts(store: str):
+    response = {}
+    if store == "tokyo":
+        response = [
+            {
+                "id":"4323",
+                "title":{"rendered":"しょうと"},
+                "link":"https://mikado-tokyo.com/blog/cast/4323/"
+            }
+        ]
+    elif store == "yokohama":
+        response = [
+            {
+                "id":"1116",
+                "title":{"rendered":"しょうと"},
+                "link":"https://mikado-tokyo.com/yokohama/cast/1116/"
+            }
+        ]
+    return response
+
+@app.get('/store/{store}/wp-json/wp/v2/casts/{cast_id}')
+async def get_cast(store: str, cast_id: str):
+
+    # 一覧を一旦取得
+    casts = await get_casts(store)
+
+    # ID でフィルタ
+    filtered = [c for c in casts if c["id"] == cast_id]
+
+    if len(filtered) == 0:
+        return {}  # WP-JSON の挙動に合わせるなら [] でもOK
+
+    return filtered[0]
+
+@app.post('/store/{store}/bulk_update_schedules')
+async def post_bulk_update_schedules(request: Request):
+    response = {
+        'message': 'store/*/bulk_update_schedules'
+    }
+    return response
+
+@app.post('/store/{store}/update_schedules')
+async def post_update_schedules(request: Request):
+    response = {
+        'message': 'store/*/update_schedules'
+    }
+    return response
+
 @app.post('/line/oauth2/v3/token')
 async def get_line_token(request: Request):
     response = {

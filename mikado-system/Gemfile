@@ -94,3 +94,7 @@ gem 'mechanize'
 
 # httparty
 gem 'httparty'
+
+# google calendar連携
+gem 'google-apis-calendar_v3'
+gem 'googleauth'

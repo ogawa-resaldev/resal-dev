@@ -261,6 +261,7 @@ class UsersController < ApplicationController
         :therapist_back_ratio,
         :auto_complete,
         :mail_address,
+        :integrate_google_calendar_flag,
         :account_information,
         :_destroy
       ],
