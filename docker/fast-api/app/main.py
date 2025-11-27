@@ -1,3 +1,4 @@
+import json
 from fastapi import FastAPI, Request
 import os
 import datetime
@@ -27,24 +28,14 @@ async def post_therapists(request: Request):
 
 @app.get('/store/{store}/wp-json/wp/v2/casts')
 async def get_casts(store: str):
-    response = {}
-    if store == "tokyo":
-        response = [
-            {
-                "id":"4323",
-                "title":{"rendered":"しょうと"},
-                "link":"https://mikado-tokyo.com/blog/cast/4323/"
-            }
-        ]
-    elif store == "yokohama":
-        response = [
-            {
-                "id":"1116",
-                "title":{"rendered":"しょうと"},
-                "link":"https://mikado-tokyo.com/yokohama/cast/1116/"
-            }
-        ]
-    return response
+    file_path = f"store/{store}.json"
+    try:
+        with open(file_path, encoding='utf-8') as f:
+            data = json.load(f)
+            return data
+
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Store not found")
 
 @app.get('/store/{store}/wp-json/wp/v2/casts/{cast_id}')
 async def get_cast(store: str, cast_id: str):
